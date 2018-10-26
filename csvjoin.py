@@ -18,31 +18,33 @@ def process(fhs, keys):
         apply rule to each field (in order)
     '''
     logging.info('reading files...')
+    headers_map = []
     headers = []
     all_cols = set()
     for key, fh in zip(keys, fhs):
       header = next(fh)
       all_cols.update(header)
       colmap = {name: pos for pos, name in enumerate(header)}
-      headers.append(colmap)
+      headers_map.append(colmap)
+      headers.append(header)
       if key not in colmap:
         logging.warn('key %s not found', key)
 
     rows = collections.defaultdict(dict)
     lines = 0
     for lines, row in enumerate(fhs[0]):
-      key_pos = headers[0][keys[0]]
+      key_pos = headers_map[0][keys[0]]
       key = row[key_pos]
-      rows[key] = {name: pos for pos, name in enumerate(row)}
+      rows[key].update({headers[0][row_num]: row[row_num] for row_num in range(len(row))})
 
     logging.info('read %i lines', lines + 1)
 
-    for key, fh, pos in zip(keys[1:], fhs[1:], range(1, len(keys))):
+    for key, fh, fh_pos in zip(keys[1:], fhs[1:], range(1, len(keys))):
       lines = 0
       for lines, row in enumerate(fh):
-        key_pos = headers[pos][key]
+        key_pos = headers_map[fh_pos][key]
         if row[key_pos] in rows:
-          rows[row[key_pos]].update({name: pos for pos, name in enumerate(row)})
+          rows[row[key_pos]].update({headers[fh_pos][row_num]: row[row_num] for row_num in range(len(row))})
         else:
           logging.debug('key %s not found on line %i', row[key_pos], lines + 1)
       logging.info('read %i lines', lines + 1)
@@ -51,7 +53,8 @@ def process(fhs, keys):
     out_headers = sorted(list(all_cols))
     out.writerow(out_headers)
     for lines, row in enumerate(rows.keys()):
-      out.writerow(rows[row])
+      out_row = [rows[row].get(column, '') for column in out_headers]
+      out.writerow(out_row)
         
     logging.info('wrote %i lines', lines + 1)
 
