@@ -12,7 +12,7 @@ import csv
 import logging
 import sys
 
-def process(fhs, keys):
+def process(fhs, keys, delimiter):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
@@ -20,10 +20,10 @@ def process(fhs, keys):
     logging.info('reading files...')
     headers_map = []
     headers = []
-    all_cols = set()
+    out_headers = []
     for key, fh in zip(keys, fhs):
       header = next(fh)
-      all_cols.update(header)
+      out_headers = out_headers + header
       colmap = {name: pos for pos, name in enumerate(header)}
       headers_map.append(colmap)
       headers.append(header)
@@ -49,14 +49,13 @@ def process(fhs, keys):
           logging.debug('key %s not found on line %i', row[key_pos], lines + 1)
       logging.info('read %i lines', lines + 1)
 
-    out = csv.writer(sys.stdout)
-    out_headers = sorted(list(all_cols))
+    out = csv.writer(sys.stdout, delimiter=delimiter)
     out.writerow(out_headers)
     for lines, row in enumerate(rows.keys()):
       out_row = [rows[row].get(column, '') for column in out_headers]
       out.writerow(out_row)
         
-    logging.info('wrote %i lines', lines + 1)
+    logging.info('wrote %i lines', lines + 2)
 
 def main():
     '''
@@ -66,8 +65,9 @@ def main():
     parser = argparse.ArgumentParser(description='Merge CSVs based on key')
     parser.add_argument('--keys', nargs='+', help='column names')
     parser.add_argument('--files', nargs='+', help='input files')
+    parser.add_argument('--delimiter', required=False, default=',', help='input files')
     args = parser.parse_args()
-    process([csv.reader(open(fn, 'r')) for fn in args.files], args.keys)
+    process([csv.reader(open(fn, 'r'), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter)
 
 if __name__ == '__main__':
     main()
