@@ -12,7 +12,7 @@ import csv
 import logging
 import sys
 
-def process(fhs, keys, delimiter):
+def process(fhs, keys, delimiter, inner):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
@@ -51,23 +51,34 @@ def process(fhs, keys, delimiter):
 
     out = csv.writer(sys.stdout, delimiter=delimiter)
     out.writerow(out_headers)
+    written = 0
     for lines, row in enumerate(rows.keys()):
+      if inner and len(rows[row]) != len(out_headers):
+        logging.debug('skipped line %i since not all files have matching records', lines + 1)
+        continue
       out_row = [rows[row].get(column, '') for column in out_headers]
       out.writerow(out_row)
+      written += 1
         
-    logging.info('wrote %i lines', lines + 2)
+    logging.info('wrote %i lines', written)
 
 def main():
     '''
         parse command line arguments
     '''
-    logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Merge CSVs based on key')
     parser.add_argument('--keys', nargs='+', help='column names')
     parser.add_argument('--files', nargs='+', help='input files')
     parser.add_argument('--delimiter', required=False, default=',', help='input files')
+    parser.add_argument('--verbose', action='store_true', help='more logging')
+    parser.add_argument('--inner', action='store_true', help='intersect')
     args = parser.parse_args()
-    process([csv.reader(open(fn, 'r'), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter)
+    if args.verbose:
+      logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
+    else:
+      logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
+
+    process([csv.reader(open(fn, 'r'), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter, args.inner)
 
 if __name__ == '__main__':
     main()
