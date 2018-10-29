@@ -12,7 +12,7 @@ import csv
 import logging
 import sys
 
-def process(fhs, keys, delimiter, inner):
+def process(fhs, keys, delimiter, inner, horizontal):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
@@ -30,6 +30,7 @@ def process(fhs, keys, delimiter, inner):
       if key not in colmap:
         logging.warn('key %s not found', key)
 
+    # first file
     rows = collections.defaultdict(dict)
     lines = 0
     for lines, row in enumerate(fhs[0]):
@@ -39,12 +40,24 @@ def process(fhs, keys, delimiter, inner):
 
     logging.info('read %i lines', lines + 1)
 
+    # additional files
     for key, fh, fh_pos in zip(keys[1:], fhs[1:], range(1, len(keys))):
       lines = 0
+      keys_seen = collections.defaultdict(int)
       for lines, row in enumerate(fh):
         key_pos = headers_map[fh_pos][key]
-        if row[key_pos] in rows:
-          rows[row[key_pos]].update({headers[fh_pos][row_num]: row[row_num] for row_num in range(len(row))})
+        if row[key_pos] in rows: # key exists
+          keys_seen[row[key_pos]] += 1
+          if keys_seen[row[key_pos]] > 1:
+            logging.debug('%s seen %i times', row[key_pos], keys_seen[row[key_pos]])
+          if horizontal:
+            rows[row[key_pos]].update({'{}_{}'.format(headers[fh_pos][row_num], keys_seen[row[key_pos]]): row[row_num] for row_num in range(len(row))})
+            # TODO this is inefficient
+            for row_num in range(len(row)):
+              if '{}_{}'.format(headers[fh_pos][row_num], keys_seen[row[key_pos]]) not in out_headers:
+                out_headers.append('{}_{}'.format(headers[fh_pos][row_num], keys_seen[row[key_pos]]))
+          else: # normal
+            rows[row[key_pos]].update({headers[fh_pos][row_num]: row[row_num] for row_num in range(len(row))})
         else:
           logging.debug('key %s not found on line %i', row[key_pos], lines + 1)
       logging.info('read %i lines', lines + 1)
@@ -72,13 +85,14 @@ def main():
     parser.add_argument('--delimiter', required=False, default=',', help='input files')
     parser.add_argument('--verbose', action='store_true', help='more logging')
     parser.add_argument('--inner', action='store_true', help='intersect')
+    parser.add_argument('--horizontal', action='store_true', help='add additionally found records as new columns')
     args = parser.parse_args()
     if args.verbose:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     else:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-    process([csv.reader(open(fn, 'r'), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter, args.inner)
+    process([csv.reader(open(fn, 'r'), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter, args.inner, args.horizontal)
 
 if __name__ == '__main__':
     main()
