@@ -31,12 +31,13 @@ def process(fhs, keys, delimiter, inner, horizontal):
         logging.warn('key %s not found', key)
 
     # first file
-    rows = collections.defaultdict(dict)
+    rows = collections.defaultdict(list)
     lines = 0
     for lines, row in enumerate(fhs[0]):
       key_pos = headers_map[0][keys[0]]
       key = row[key_pos]
-      rows[key].update({headers[0][row_num]: row[row_num] for row_num in range(len(row))})
+      # add new
+      rows[key].append({headers[0][row_num]: row[row_num] for row_num in range(len(row))})
 
     logging.info('read %i lines', lines + 1)
 
@@ -51,13 +52,15 @@ def process(fhs, keys, delimiter, inner, horizontal):
           if keys_seen[row[key_pos]] > 1:
             logging.debug('%s seen %i times', row[key_pos], keys_seen[row[key_pos]])
           if horizontal:
-            rows[row[key_pos]].update({'{}_{}'.format(headers[fh_pos][row_num], keys_seen[row[key_pos]]): row[row_num] for row_num in range(len(row))})
+            for item in rows[row[key_pos]]:
+              item.update({'{}_{}'.format(headers[fh_pos][row_num], keys_seen[row[key_pos]]): row[row_num] for row_num in range(len(row))})
             # TODO this is inefficient
             for row_num in range(len(row)):
               if '{}_{}'.format(headers[fh_pos][row_num], keys_seen[row[key_pos]]) not in out_headers:
                 out_headers.append('{}_{}'.format(headers[fh_pos][row_num], keys_seen[row[key_pos]]))
           else: # normal
-            rows[row[key_pos]].update({headers[fh_pos][row_num]: row[row_num] for row_num in range(len(row))})
+            for item in rows[row[key_pos]]:
+              item.update({headers[fh_pos][row_num]: row[row_num] for row_num in range(len(row))})
         else:
           logging.debug('key %s not found on line %i', row[key_pos], lines + 1)
       logging.info('read %i lines', lines + 1)
@@ -65,13 +68,14 @@ def process(fhs, keys, delimiter, inner, horizontal):
     out = csv.writer(sys.stdout, delimiter=delimiter)
     out.writerow(out_headers)
     written = 0
-    for lines, row in enumerate(rows.keys()):
-      if inner and len(rows[row]) != len(out_headers):
-        logging.debug('skipped line %i since not all files have matching records', lines + 1)
-        continue
-      out_row = [rows[row].get(column, '') for column in out_headers]
-      out.writerow(out_row)
-      written += 1
+    for lines, row_key in enumerate(rows.keys()):
+      for row in rows[row_key]:
+        if inner and len(row) != len(out_headers):
+          logging.debug('skipped line %i since not all files have matching records', lines + 1)
+          continue
+        out_row = [row.get(column, '') for column in out_headers]
+        out.writerow(out_row)
+        written += 1
         
     logging.info('wrote %i lines', written)
 
