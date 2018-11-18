@@ -12,7 +12,7 @@ import csv
 import logging
 import sys
 
-def process(fhs, keys, delimiter, inner, key_length):
+def process(fhs, keys, delimiter, inner, key_length, horizontal):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
@@ -30,42 +30,58 @@ def process(fhs, keys, delimiter, inner, key_length):
       if key not in colmap:
         logging.warn('key %s not found', key)
 
-    rows = collections.defaultdict(dict)
+    # first file
+    rows = collections.defaultdict(list)
     lines = 0
     for lines, row in enumerate(fhs[0]):
       key_pos = headers_map[0][keys[0]]
       if key_length is None:
-        key = row[key_pos]
+        val = row[key_pos]
       else:
-        key = row[key_pos][:key_length]
-      rows[key].update({headers[0][row_num]: row[row_num] for row_num in range(len(row))})
+        val = row[key_pos][:key_length]
+      # each line from the first file indexed on key value
+      rows[val].append({headers[0][row_num]: row[row_num] for row_num in range(len(row))})
 
     logging.info('read %i lines', lines + 1)
 
-    for key, fh, fh_pos in zip(keys[1:], fhs[1:], range(1, len(keys))): # each subsequent file
+    for key, fh, fh_pos in zip(keys[1:], fhs[1:], range(1, len(keys))): # each subsequent file and the index key
       lines = 0
-      for lines, row in enumerate(fh):
-        key_pos = headers_map[fh_pos][key] # which column is the key?
+      keys_seen = collections.defaultdict(int)
+      for lines, row in enumerate(fh): # each row in file of interest
+        key_pos = headers_map[fh_pos][key] # which column is the key in this file?
         if key_length is None:
-          key_of_interest = row[key_pos]
+          val_of_interest = row[key_pos] # what is the value of the index for this file?
         else:
-          key_of_interest = row[key_pos][:key_length]
-        if key_of_interest in rows:
-          rows[key_of_interest].update({headers[fh_pos][row_num]: row[row_num] for row_num in range(len(row))})
+          val_of_interest = row[key_pos][:key_length]
+        if val_of_interest in rows:
+          keys_seen[val_of_interest] += 1
+          if keys_seen[val_of_interest] > 1:
+            logging.debug('%s seen %i times', val_of_interest, keys_seen[val_of_interest])
+          if horizontal:
+            for item in rows[val_of_interest]:
+              item.update({'{}_{}'.format(headers[fh_pos][row_num], keys_seen[val_of_interest]): row[row_num] for row_num in range(len(row))})
+            # TODO this is inefficient
+            for row_num in range(len(row)):
+              if '{}_{}'.format(headers[fh_pos][row_num], keys_seen[val_of_interest]) not in out_headers:
+                out_headers.append('{}_{}'.format(headers[fh_pos][row_num], keys_seen[val_of_interest]))
+          else: # normal
+            for item in rows[val_of_interest]:
+              item.update({headers[fh_pos][row_num]: row[row_num] for row_num in range(len(row))})
         else:
-          logging.debug('key %s not found on line %i', row[key_pos], lines + 1)
+          logging.debug('key %s not found on line %i with column number %i', val_of_interest, lines + 1, key_pos)
       logging.info('read %i lines', lines + 1)
 
     out = csv.writer(sys.stdout, delimiter=delimiter)
     out.writerow(out_headers)
     written = 0
-    for lines, row in enumerate(rows.keys()):
-      if inner and len(rows[row]) != len(out_headers):
-        logging.debug('skipped line %i since not all files have matching records', lines + 1)
-        continue
-      out_row = [rows[row].get(column, '') for column in out_headers]
-      out.writerow(out_row)
-      written += 1
+    for lines, row_key in enumerate(rows.keys()):
+      for row in rows[row_key]:
+        if inner and len(row) != len(out_headers):
+          logging.debug('skipped line %i since not all files have matching records', lines + 1)
+          continue
+        out_row = [row.get(column, '') for column in out_headers]
+        out.writerow(out_row)
+        written += 1
         
     logging.info('wrote %i lines', written)
 
@@ -80,13 +96,14 @@ def main():
     parser.add_argument('--delimiter', required=False, default=',', help='input files')
     parser.add_argument('--verbose', action='store_true', help='more logging')
     parser.add_argument('--inner', action='store_true', help='intersect')
+    parser.add_argument('--horizontal', action='store_true', help='add additionally found records as new columns')
     args = parser.parse_args()
     if args.verbose:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     else:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-    process([csv.reader(open(fn, 'r'), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter, args.inner, args.key_length)
+    process([csv.reader(open(fn, 'r'), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter, args.inner, args.key_length, args.horizontal)
 
 if __name__ == '__main__':
     main()

@@ -23,3 +23,12 @@ python csvmerge.py file1.csv [file2.csv...]
 ```
 python csvmerge.py test/1.csv test/2.csv > 3.csv
 ```
+
+## csvjoin
+Join tables based on a column name
+
+### Usage
+```
+python csvjoin.py --keys col1 col2 --files file1 file2.csv > file3.csv
+```
+
