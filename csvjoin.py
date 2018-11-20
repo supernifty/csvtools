@@ -21,9 +21,12 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
     headers_map = []
     headers = []
     out_headers = []
-    for key, fh in zip(keys, fhs):
+    for file_num, (key, fh) in enumerate(zip(keys, fhs)):
       header = next(fh)
-      out_headers = out_headers + header
+      if file_num == 0:
+        out_headers = out_headers + header 
+      else:
+        out_headers = out_headers + [h for h in header if h != key] # don't include additional keys
       colmap = {name: pos for pos, name in enumerate(header)}
       headers_map.append(colmap)
       headers.append(header)
