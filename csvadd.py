@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+'''
+  simply adds a new column with specified value
+'''
 
 import argparse
 import logging

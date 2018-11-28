@@ -43,8 +43,9 @@ def main():
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Update CSV column values')
     parser.add_argument('--map', nargs='+', help='rules to apply to data of the form fieldname,oldvalue,newvalue')
+    parser.add_argument('--delimiter', default=',', help='file delimiter')
     args = parser.parse_args()
-    process(csv.reader(sys.stdin), args.map)
+    process(csv.reader(sys.stdin, delimiter=args.delimiter), args.map)
 
 if __name__ == '__main__':
     main()
