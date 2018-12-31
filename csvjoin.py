@@ -26,12 +26,14 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
       if file_num == 0:
         out_headers = out_headers + header 
       else:
-        out_headers = out_headers + [h for h in header if h != key] # don't include additional keys
+        out_headers = out_headers + [h for h in header if h not in out_headers] # don't include identical keys
       colmap = {name: pos for pos, name in enumerate(header)}
       headers_map.append(colmap)
       headers.append(header)
       if key not in colmap:
         logging.warn('key %s not found', key)
+
+    logging.debug(sorted(out_headers))
 
     # first file
     rows = collections.defaultdict(list)
@@ -80,7 +82,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
     for lines, row_key in enumerate(rows.keys()):
       for row in rows[row_key]:
         if inner and len(row) != len(out_headers):
-          logging.debug('skipped line %i since not all files have matching records', lines + 1)
+          logging.debug('skipped line %i since not all files have matching records (%i columns vs %i expected)', lines + 1, len(row), len(out_headers))
           continue
         out_row = [row.get(column, '') for column in out_headers]
         out.writerow(out_row)
