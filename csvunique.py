@@ -21,6 +21,9 @@ def main(colnames, delimiter, fh, out, duplicates):
   for row in reader:
     key = '\t'.join([row[col] for col in colnames])
     if key in output and duplicates is not None:
+      result = [row[col] for col in reader.fieldnames]
+      if None in result:
+        logging.warn(result)
       duplicates_fh.write('{}\n'.format(delimiter.join([row[col] for col in reader.fieldnames])))
     output[key] = row # keep last matching
     count += 1
