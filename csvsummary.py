@@ -24,6 +24,8 @@ def main(colnames, delimiter, fh, out):
   for row in reader:
     for col in colnames:
       summary = check(summary, col)
+      if row[col] in ('nan', 'inf'):
+        continue
       try:
         v = float(row[col])
       except:
