@@ -41,6 +41,9 @@ def process(csvs, union, delimiter):
                      ' '.join(list(drop)))
         lines = 0
         for lines, row in enumerate(handle):
+            if len(row) == 0:
+              logging.warn('processing %s: empty row. continuing...', csvs[idx])
+              break
             outline = []
             for val in output_cols: # each colname to include
                 if val in headers_list[idx]:

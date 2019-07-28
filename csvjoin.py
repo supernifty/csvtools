@@ -21,6 +21,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
     headers_map = []
     headers = []
     out_headers = []
+
     for file_num, (key, fh) in enumerate(zip(keys, fhs)):
       header = next(fh)
       if file_num == 0:
@@ -30,8 +31,9 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
       colmap = {name: pos for pos, name in enumerate(header)}
       headers_map.append(colmap)
       headers.append(header)
-      if key not in colmap:
-        logging.warn('key %s not found', key)
+      for keyname in key.split(','):
+        if keyname not in colmap:
+          logging.warn('key %s not found', keyname)
 
     logging.debug(sorted(out_headers))
 
@@ -39,12 +41,13 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
     rows = collections.defaultdict(list)
     lines = 0
     for lines, row in enumerate(fhs[0]):
-      key_pos = headers_map[0][keys[0]]
+      key_pos = [headers_map[0][key] for key in keys[0].split(',')]
       if key_length is None:
-        val = row[key_pos]
+        val = tuple([row[key] for key in key_pos])
       else:
-        val = row[key_pos][:key_length]
+        val = (row[key_pos[0]][:key_length],) # with key_pos we only support one key
       # each line from the first file indexed on key value
+      logging.debug('adding key %s', val)
       rows[val].append({headers[0][row_num]: row[row_num] for row_num in range(len(row))})
 
     logging.info('read %i lines', lines + 1)
@@ -53,11 +56,11 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
       lines = 0
       keys_seen = collections.defaultdict(int)
       for lines, row in enumerate(fh): # each row in file of interest
-        key_pos = headers_map[fh_pos][key] # which column is the key in this file?
+        key_pos = [headers_map[fh_pos][keyname] for keyname in key.split(',')] # which column is the key in this file?
         if key_length is None:
-          val_of_interest = row[key_pos] # what is the value of the index for this file?
+          val_of_interest = tuple([row[keyname] for keyname in key_pos]) # what is the value of the index for this file?
         else:
-          val_of_interest = row[key_pos][:key_length]
+          val_of_interest = (row[key_pos[0]][:key_length],)
         if val_of_interest in rows:
           keys_seen[val_of_interest] += 1
           if keys_seen[val_of_interest] > 1:
@@ -73,7 +76,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
             for item in rows[val_of_interest]:
               item.update({headers[fh_pos][row_num]: row[row_num] for row_num in range(len(row))})
         else:
-          logging.debug('key %s not found on line %i with column number %i', val_of_interest, lines + 1, key_pos)
+          logging.debug('key %s not found on line %i with column number %s', val_of_interest, lines + 1, key_pos)
       logging.info('read %i lines', lines + 1)
 
     out = csv.writer(sys.stdout, delimiter=delimiter)
@@ -95,7 +98,7 @@ def main():
         parse command line arguments
     '''
     parser = argparse.ArgumentParser(description='Merge CSVs based on key')
-    parser.add_argument('--keys', nargs='+', help='column names')
+    parser.add_argument('--keys', nargs='+', help='column names (comma separated for multiple keys)')
     parser.add_argument('--key_length', type=int, required=False, help='only match first part of keys')
     parser.add_argument('--files', nargs='+', help='input files')
     parser.add_argument('--delimiter', required=False, default=',', help='input files')
