@@ -24,7 +24,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
 
     for file_num, (key, fh) in enumerate(zip(keys, fhs)):
       header = next(fh)
-      if file_num == 0:
+      if not horizontal or file_num == 0:
         out_headers = out_headers + header 
       else:
         out_headers = out_headers + [h for h in header if h not in out_headers] # don't include identical keys
@@ -40,17 +40,22 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
     # first file
     rows = collections.defaultdict(list)
     lines = 0
+    key_order = []
     for lines, row in enumerate(fhs[0]):
       key_pos = [headers_map[0][key] for key in keys[0].split(',')]
       if key_length is None:
         val = tuple([row[key] for key in key_pos])
       else:
         val = (row[key_pos[0]][:key_length],) # with key_pos we only support one key
+
+      if val not in key_order:
+        key_order.append(val)
+
       # each line from the first file indexed on key value
       logging.debug('adding key %s', val)
       rows[val].append({headers[0][row_num]: row[row_num] for row_num in range(len(row))})
 
-    logging.info('read %i lines', lines + 1)
+    logging.info('read %i lines from first file', lines + 1)
 
     for key, fh, fh_pos in zip(keys[1:], fhs[1:], range(1, len(keys))): # each subsequent file and the index key
       lines = 0
@@ -82,7 +87,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
     out = csv.writer(sys.stdout, delimiter=delimiter)
     out.writerow(out_headers)
     written = 0
-    for lines, row_key in enumerate(rows.keys()):
+    for lines, row_key in enumerate(key_order): # keep same order from first file #rows.keys()):
       for row in rows[row_key]:
         if inner and len(row) != len(out_headers):
           logging.debug('skipped line %i since not all files have matching records (%i columns vs %i expected)', lines + 1, len(row), len(out_headers))
