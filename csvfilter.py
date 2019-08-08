@@ -24,19 +24,24 @@ def process(fh, filters, delimiter):
     for rule in filters:
       colname, value = rule.split('=')
       rules[colname].add(value)
+
+    logging.info('affected columns: %s', ' '.join(rules.keys()))
     
+    skipped = collections.defaultdict(int)
     for lines, row in enumerate(fh):
         # check each rule
         ok = True
         for rule in rules:
-          if row[colname] not in rules[colname]:
+          if row[rule] not in rules[rule]:
             ok = False
+            skipped[rule] += 1
             break
         if ok:
             out.writerow(row)
             written += 1
-        
+
     logging.info('wrote %i of %i', written, lines + 1)
+    logging.info('filtered: %s', ' '.join(['{}: {}'.format(key, skipped[key]) for key in skipped]))
 
 def main():
     '''

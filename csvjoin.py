@@ -38,10 +38,13 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
     logging.debug(sorted(out_headers))
 
     # first file
+    logging.info('reading first file...')
     rows = collections.defaultdict(list)
     lines = 0
     key_order = []
     for lines, row in enumerate(fhs[0]):
+      if lines % 1000 == 0:
+        logging.info('processed %i lines...', lines)
       key_pos = [headers_map[0][key] for key in keys[0].split(',')]
       if key_length is None:
         val = tuple([row[key] for key in key_pos])
@@ -60,7 +63,10 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
     for key, fh, fh_pos in zip(keys[1:], fhs[1:], range(1, len(keys))): # each subsequent file and the index key
       lines = 0
       keys_seen = collections.defaultdict(int)
+      logging.info('reading next file...')
       for lines, row in enumerate(fh): # each row in file of interest
+        if lines % 1000 == 0:
+          logging.info('processed %i lines...', lines)
         key_pos = [headers_map[fh_pos][keyname] for keyname in key.split(',')] # which column is the key in this file?
         if key_length is None:
           val_of_interest = tuple([row[keyname] for keyname in key_pos]) # what is the value of the index for this file?
