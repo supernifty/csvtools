@@ -37,7 +37,7 @@ def main():
         parse command line arguments
     '''
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
-    parser = argparse.ArgumentParser(description='Update CSV column values')
+    parser = argparse.ArgumentParser(description='Filter CSV based on values')
     parser.add_argument('--col', help='column name')
     parser.add_argument('--min', type=float, help='minimum value for column')
     parser.add_argument('--max', type=float, help='maximum value for column')
