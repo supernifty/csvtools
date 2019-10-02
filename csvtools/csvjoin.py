@@ -95,13 +95,13 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
     written = 0
     for lines, row_key in enumerate(key_order): # keep same order from first file #rows.keys()):
       for row in rows[row_key]:
-        if inner and len(row) != len(out_headers):
+        if inner and len(set(row)) != len(set(out_headers)):
           logging.debug('skipped line %i since not all files have matching records (%i columns vs %i expected)', lines + 1, len(row), len(out_headers))
           continue
         out_row = [row.get(column, '') for column in out_headers]
         out.writerow(out_row)
         written += 1
-        
+
     logging.info('wrote %i lines', written)
 
 def main():
