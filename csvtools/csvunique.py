@@ -4,6 +4,7 @@
 '''
 
 import argparse
+import collections
 import csv
 import logging
 import sys
@@ -12,7 +13,9 @@ def main(colnames, delimiter, fh, out, duplicates):
   logging.info('starting...')
 
   reader = csv.DictReader(fh, delimiter=delimiter)
-  writer = csv.DictWriter(out, delimiter=delimiter, fieldnames=reader.fieldnames)
+  # remove duplicate columns
+  fieldnames = list(collections.OrderedDict.fromkeys(reader.fieldnames))
+  writer = csv.DictWriter(out, delimiter=delimiter, fieldnames=fieldnames)
   writer.writeheader()
   output = {}
   count = 0
