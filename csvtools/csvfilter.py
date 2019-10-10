@@ -71,8 +71,8 @@ def main():
         parse command line arguments
     '''
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
-    parser = argparse.ArgumentParser(description='Update CSV column values')
-    parser.add_argument('--filters', nargs='+', help='colname[<=>]valname')
+    parser = argparse.ArgumentParser(description='Filter rows')
+    parser.add_argument('--filters', nargs='+', help='colname[<=>]valname... same colname is or, different colname is and')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     args = parser.parse_args()
     process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.filters, args.delimiter)
