@@ -20,13 +20,17 @@ def process(fh, filters, delimiter):
     out.writeheader()
     lines = written = 0
 
-    rules = collections.defaultdict(set) # equal to rule
+    eq = collections.defaultdict(set) # equal to rule
     lt = collections.defaultdict(float)
     gt = collections.defaultdict(float)
+    ne = collections.defaultdict(set)
     for rule in filters:
       if '=' in rule:
         colname, value = rule.split('=')
-        rules[colname].add(value)
+        eq[colname].add(value)
+      if '!' in rule:
+        colname, value = rule.split('!')
+        ne[colname].add(value)
       if '<' in rule:
         colname, value = rule.split('<')
         lt[colname] = float(value)
@@ -34,34 +38,40 @@ def process(fh, filters, delimiter):
         colname, value = rule.split('>')
         gt[colname] = float(value)
 
-    logging.info('affected columns: %s; %s; %s', ' '.join(rules.keys()), ' '.join(lt.keys()), ' '.join(gt.keys()))
+    logging.info('affected columns: %s; %s; %s; %s', ' '.join(eq.keys()), ' '.join(lt.keys()), ' '.join(gt.keys()), ' '.join(ne.keys()))
     
     skipped = collections.defaultdict(int)
     for lines, row in enumerate(fh):
         # check each rule
         ok = True
-        for rule in rules: # each colname in rules
-          if row[rule] not in rules[rule]: # doesn't match =
+        for rule in eq: # each colname in rules
+          if row[rule] not in eq[rule]: # doesn't match =
             ok = False
             skipped[rule] += 1
             break
         if ok:
-          # check lt
-          for rule in lt:
-            if float(row[rule]) >= lt[rule]: # lt fail
+          for rule in ne:
+            if row[rule] in ne[rule]: # matches !
               ok = False
               skipped[rule] += 1
               break
           if ok:
             # check lt
-            for rule in gt:
-              if float(row[rule]) <= gt[rule]: # gt fail
+            for rule in lt:
+              if float(row[rule]) >= lt[rule]: # lt fail
                 ok = False
                 skipped[rule] += 1
                 break
             if ok:
-              out.writerow(row)
-              written += 1
+              # check lt
+              for rule in gt:
+                if float(row[rule]) <= gt[rule]: # gt fail
+                  ok = False
+                  skipped[rule] += 1
+                  break
+              if ok:
+                out.writerow(row)
+                written += 1
 
     logging.info('wrote %i of %i', written, lines + 1)
     logging.info('filtered: %s', ' '.join(['{}: {}'.format(key, skipped[key]) for key in skipped]))
@@ -72,7 +82,7 @@ def main():
     '''
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Filter rows')
-    parser.add_argument('--filters', nargs='+', help='colname[<=>]valname... same colname is or, different colname is and')
+    parser.add_argument('--filters', nargs='+', help='colname[<=>!]valname... same colname is or, different colname is and')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     args = parser.parse_args()
     process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.filters, args.delimiter)

@@ -11,7 +11,7 @@ import logging
 import operator
 import sys
 
-def process(fh, cols, op, dest, delimiter, default_newval=-1):
+def process(fh, cols, op, dest, delimiter, default_newval=-1, join_string=' '):
     '''
       apply operation and write to dest
     '''
@@ -31,6 +31,8 @@ def process(fh, cols, op, dest, delimiter, default_newval=-1):
           newval = min(float(row[col]) for col in cols)
         elif op == 'max':
           newval = max(float(row[col]) for col in cols)
+        elif op == 'concat':
+          newval = join_string.join([row[col] for col in cols])
         else:
           logging.fatal('Unrecognised operation %s', op)
       except:
@@ -49,11 +51,12 @@ def main():
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Filter CSV based on values')
     parser.add_argument('--cols', nargs='+', required=True, help='column name')
-    parser.add_argument('--op', required=True, help='operation sum, diff, product, min, max')
+    parser.add_argument('--op', required=True, help='operation sum, diff, product, min, max, concat')
+    parser.add_argument('--join_string', required=False, default=' ', help='operation sum, diff, product, min, max, concat')
     parser.add_argument('--dest', required=True, help='column name to add')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     args = parser.parse_args()
-    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.op, args.dest, args.delimiter)
+    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.op, args.dest, args.delimiter, join_string=args.join_string)
 
 if __name__ == '__main__':
     main()
