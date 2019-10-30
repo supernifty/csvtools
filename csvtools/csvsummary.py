@@ -29,9 +29,10 @@ def main(colnames, delimiter, categorical, fh, out):
         summary[col][row[col]] += 1
 
     # summarise
+    out.write('Value\tCount\n')
     for col in colnames:
       if len(colnames) > 1:
-        out.write('Column:\t{}\n'.format(col))
+        out.write('* Column\t{}\n'.format(col))
       for key in sorted(summary[col].keys()):
         out.write('{}\t{}\n'.format(key, summary[col][key]))
       if len(colnames) > 1:
