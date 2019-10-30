@@ -72,6 +72,8 @@ def process(fh, filters, delimiter):
               if ok:
                 out.writerow(row)
                 written += 1
+        if lines % 100000 == 0:
+          logging.debug('%i lines processed, wrote %i...', lines, written)
 
     logging.info('wrote %i of %i', written, lines + 1)
     logging.info('filtered: %s', ' '.join(['{}: {}'.format(key, skipped[key]) for key in skipped]))
@@ -84,7 +86,12 @@ def main():
     parser = argparse.ArgumentParser(description='Filter rows')
     parser.add_argument('--filters', nargs='+', help='colname[<=>!]valname... same colname is or, different colname is and')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
+    parser.add_argument('--verbose', action='store_true', help='more logging')
     args = parser.parse_args()
+    if args.verbose:
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
     process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.filters, args.delimiter)
 
 if __name__ == '__main__':
