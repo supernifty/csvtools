@@ -9,7 +9,7 @@ import csv
 import logging
 import sys
 
-def process(fh, filters, delimiter):
+def process(fh, filters, delimiter, any_filter):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
@@ -24,10 +24,14 @@ def process(fh, filters, delimiter):
     lt = collections.defaultdict(float)
     gt = collections.defaultdict(float)
     ne = collections.defaultdict(set)
+    contains = collections.defaultdict(set)
     for rule in filters:
       if '=' in rule:
         colname, value = rule.split('=')
         eq[colname].add(value)
+      if '%' in rule:
+        colname, value = rule.split('%')
+        contains[colname].add(value)
       if '!' in rule:
         colname, value = rule.split('!')
         ne[colname].add(value)
@@ -38,42 +42,88 @@ def process(fh, filters, delimiter):
         colname, value = rule.split('>')
         gt[colname] = float(value)
 
-    logging.info('affected columns: %s; %s; %s; %s', ' '.join(eq.keys()), ' '.join(lt.keys()), ' '.join(gt.keys()), ' '.join(ne.keys()))
+    logging.info('affected columns: %s %s %s %s %s', ' '.join(eq.keys()), ' '.join(lt.keys()), ' '.join(gt.keys()), ' '.join(ne.keys()), ' '.join(contains.keys()))
     
     skipped = collections.defaultdict(int)
     for lines, row in enumerate(fh):
         # check each rule
         ok = True
+        done = False # for any_filter
         for rule in eq: # each colname in rules
           if row[rule] not in eq[rule]: # doesn't match =
             ok = False
             skipped[rule] += 1
+            if not any_filter:
+              break
+          elif any_filter: # success
+            done = True
             break
-        if ok:
+        if done:
+          out.writerow(row)
+          written += 1
+          continue
+
+        if any_filter or ok:
           for rule in ne:
             if row[rule] in ne[rule]: # matches !
               ok = False
               skipped[rule] += 1
+              if not any_filter:
+                break
+            elif any_filter: # success
+              done = True
               break
-          if ok:
+          if done:
+            out.writerow(row)
+            written += 1
+            continue
+          if any_filter or ok:
             # check lt
             for rule in lt:
               if float(row[rule]) >= lt[rule]: # lt fail
                 ok = False
                 skipped[rule] += 1
+                if not any_filter:
+                  break
+              elif any_filter:
+                done = True
                 break
-            if ok:
+            if done:
+              out.writerow(row)
+              written += 1
+              continue
+            if any_filter or ok:
               # check lt
               for rule in gt:
                 if float(row[rule]) <= gt[rule]: # gt fail
                   ok = False
                   skipped[rule] += 1
+                  if not any_filter:
+                    break
+                elif any_filter:
+                  done = True
                   break
-              if ok:
+              if done:
                 out.writerow(row)
                 written += 1
+                continue
+              if any_filter or ok:
+                for rule in contains: # each row
+                  if all(x not in row[rule] for x in contains[rule]):
+                    ok = False
+                    skipped[rule] += 1
+                    if not any_filter:
+                      break
+                  elif any_filter:
+                    done = True
+                    break
+
+                if done or ok:
+                  out.writerow(row)
+                  written += 1
+
         if lines % 100000 == 0:
-          logging.debug('%i lines processed, wrote %i...', lines, written)
+          logging.info('%i lines processed, wrote %i...', lines, written)
 
     logging.info('wrote %i of %i', written, lines + 1)
     logging.info('filtered: %s', ' '.join(['{}: {}'.format(key, skipped[key]) for key in skipped]))
@@ -84,15 +134,16 @@ def main():
     '''
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Filter rows')
-    parser.add_argument('--filters', nargs='+', help='colname[<=>!]valname... same colname is or, different colname is and')
+    parser.add_argument('--filters', nargs='+', help='colname[<=>!%]valname... same colname is or, different colname is and')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
-    parser.add_argument('--verbose', action='store_true', help='more logging')
+    parser.add_argument('--any', action='store_true', help='allow if any filter is true (default is and)')
+    parser.add_argument('--verbose', action='store_true', default=False, help='more logging')
     args = parser.parse_args()
     if args.verbose:
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     else:
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
-    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.filters, args.delimiter)
+    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.filters, args.delimiter, args.any)
 
 if __name__ == '__main__':
     main()

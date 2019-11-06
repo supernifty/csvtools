@@ -41,6 +41,10 @@ def process(fh, op, delimiter, join_string=' + '):
             if field not in out_rows[key]:
               out_rows[key][field] = 0.0
             out_rows[key][field] += float(row[field])
+          elif ops[field] == 'count':
+            if field not in out_rows[key]:
+              out_rows[key][field] = 0
+            out_rows[key][field] += 1
           elif ops[field] == 'join':
             if field not in out_rows[key]:
               out_rows[key][field] = row[field]
@@ -62,7 +66,7 @@ def main():
     '''
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Filter CSV based on values')
-    parser.add_argument('--op', required=True, nargs='+', help='colname=[join|sum] ...')
+    parser.add_argument('--op', required=True, nargs='+', help='colname=[join|sum|count] ...')
     parser.add_argument('--join_string', required=False, default=' + ', help='join delimiter')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     args = parser.parse_args()
