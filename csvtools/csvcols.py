@@ -53,9 +53,12 @@ def main():
     parser.add_argument('--exclude_ends_with', required=False, help='additional exclude rule')
     parser.add_argument('--delimiter', default=',', help='file delimiter')
     parser.add_argument('--verbose', action='store_true', help='more logging')
+    parser.add_argument('--quiet', action='store_true', default=False, help='less logging')
     args = parser.parse_args()
     if args.verbose:
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
+    elif args.quiet:
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.WARN)
     else:
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 

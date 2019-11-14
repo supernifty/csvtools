@@ -39,6 +39,8 @@ def process(fh, delimiter, out, mode):
       for row in rows:
         out.write(delimiter.join([row[x].ljust(widths[x]) for x in fh.fieldnames]))
         out.write('\n')
+    else:
+      logging.warn('unrecognized mode %s', mode)
     logging.info('done')
 
 def main():
@@ -48,8 +50,16 @@ def main():
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Filter CSV based on values')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
-    parser.add_argument('--mode', default='', help='display mode (vertical, horizontal)')
+    parser.add_argument('--mode', default='vertical', help='display mode (vertical, horizontal)')
+    parser.add_argument('--quiet', action='store_true', default=False, help='less logging')
+    parser.add_argument('--verbose', action='store_true', default=False, help='more logging')
     args = parser.parse_args()
+    if args.verbose:
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
+    elif args.quiet:
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.WARN)
+    else:
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
     process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.delimiter, sys.stdout, args.mode)
 
 if __name__ == '__main__':

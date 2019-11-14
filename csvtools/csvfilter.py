@@ -29,16 +29,16 @@ def process(fh, filters, delimiter, any_filter):
       if '=' in rule:
         colname, value = rule.split('=')
         eq[colname].add(value)
-      if '%' in rule:
+      elif '%' in rule:
         colname, value = rule.split('%')
         contains[colname].add(value)
-      if '!' in rule:
+      elif '!' in rule:
         colname, value = rule.split('!')
         ne[colname].add(value)
-      if '<' in rule:
+      elif '<' in rule:
         colname, value = rule.split('<')
         lt[colname] = float(value)
-      if '>' in rule:
+      elif '>' in rule:
         colname, value = rule.split('>')
         gt[colname] = float(value)
 
@@ -132,15 +132,17 @@ def main():
     '''
         parse command line arguments
     '''
-    logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Filter rows')
-    parser.add_argument('--filters', nargs='+', help='colname[<=>!%]valname... same colname is or, different colname is and')
+    parser.add_argument('--filters', nargs='+', help='colname[<=>!%%]valname... same colname is or, different colname is and')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     parser.add_argument('--any', action='store_true', help='allow if any filter is true (default is and)')
     parser.add_argument('--verbose', action='store_true', default=False, help='more logging')
+    parser.add_argument('--quiet', action='store_true', default=False, help='less logging')
     args = parser.parse_args()
     if args.verbose:
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
+    elif args.quiet:
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.WARN)
     else:
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
     process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.filters, args.delimiter, args.any)
