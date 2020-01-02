@@ -50,6 +50,11 @@ def process(fh, op, delimiter, join_string=' + '):
               out_rows[key][field] = row[field]
             else:
               out_rows[key][field] = join_string.join([out_rows[key][field], row[field]])
+          elif ops[field] == 'max':
+            if field not in out_rows[key]:
+              out_rows[key][field] = row[field]
+            else:
+              out_rows[key][field] = max([out_rows[key][field], row[field]])
           else:
             logging.warn('unrecognised operation %s', ops[field])
         else:

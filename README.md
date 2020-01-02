@@ -1,6 +1,13 @@
 # csvtools
 Tools to manipulate CSV files
 
+## csvgroup
+Combine rows by grouping columns following a specified rule
+
+```
+csvgroup.py --delimiter '       ' --op Count=max
+```
+
 ## csvmap
 Update values of specified columns.
 
