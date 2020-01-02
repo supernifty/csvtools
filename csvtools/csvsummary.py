@@ -55,17 +55,25 @@ def main(colnames, delimiter, categorical, fh, out):
         summary[col]['d'].append(v)
   
     # write summary
-    out.write('name\tn\ttotal\tmin\tmax\tmean\tsd\n')
+    out.write('name\tn\ttotal\tmin\tmax\tmean\tsd\tmedian\n')
     for col in colnames:
       if summary[col]['n'] > 0:
         summary[col]['mean'] = summary[col]['sum'] / summary[col]['n']
+
+        if summary[col]['n'] % 2 == 0:
+          mid = int(summary[col]['n'] / 2)
+          summary[col]['median'] = (summary[col]['d'][mid] + summary[col]['d'][mid - 1]) / 2
+        else:
+          mid = int((summary[col]['n'] - 1) / 2)
+
+          summary[col]['median'] = summary[col]['d'][mid]
         if summary[col]['n'] > 1:
           summary[col]['sd'] = numpy.std(summary[col]['d'])
         else:
           summary[col]['sd'] = 0
-        out.write('{}\t{}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\n'.format(col, summary[col]['n'], summary[col]['sum'], summary[col]['min'], summary[col]['max'], summary[col]['mean'], summary[col]['sd']))
+        out.write('{}\t{}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\n'.format(col, summary[col]['n'], summary[col]['sum'], summary[col]['min'], summary[col]['max'], summary[col]['mean'], summary[col]['sd'], summary[col]['median']))
       else:
-        out.write('{}\t0\t0\t-\t-\t-\t-\n'.format(col))
+        out.write('{}\t0\t0\t-\t-\t-\t-\t-\n'.format(col))
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Assess MSI')
