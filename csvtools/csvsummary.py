@@ -65,8 +65,8 @@ def main(colnames, delimiter, categorical, fh, out):
           summary[col]['median'] = (summary[col]['d'][mid] + summary[col]['d'][mid - 1]) / 2
         else:
           mid = int((summary[col]['n'] - 1) / 2)
-
           summary[col]['median'] = summary[col]['d'][mid]
+
         if summary[col]['n'] > 1:
           summary[col]['sd'] = numpy.std(summary[col]['d'])
         else:

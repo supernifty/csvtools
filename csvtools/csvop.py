@@ -27,6 +27,11 @@ def process(fh, cols, op, dest, delimiter, default_newval=-1, join_string=' '):
           newval = float(row[cols[0]]) - sum(float(row[col]) for col in cols[1:])
         elif op == 'product':
           newval = functools.reduce(operator.mul, [float(row[col]) for col in cols])
+        elif op == 'divide':
+          if float(row[cols[1]]) == 0:
+            newval = 0
+          else:
+            newval = float(row[cols[0]]) / float(row[cols[1]])
         elif op == 'min':
           newval = min(float(row[col]) for col in cols)
         elif op == 'max':
@@ -51,7 +56,7 @@ def main():
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Filter CSV based on values')
     parser.add_argument('--cols', nargs='+', required=True, help='column name')
-    parser.add_argument('--op', required=True, help='operation sum, diff, product, min, max, concat')
+    parser.add_argument('--op', required=True, help='operation sum, diff, product, divide, min, max, concat')
     parser.add_argument('--join_string', required=False, default=' ', help='operation sum, diff, product, min, max, concat')
     parser.add_argument('--dest', required=True, help='column name to add')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')

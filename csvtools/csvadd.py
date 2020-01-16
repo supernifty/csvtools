@@ -10,25 +10,32 @@ import re
 import sys
 
 def main(name, value, delimiter, rules):
+  logging.debug('%i rules', len(rules))
   fh = csv.DictReader(sys.stdin, delimiter=delimiter)
   out = csv.DictWriter(sys.stdout, delimiter=delimiter, fieldnames=fh.fieldnames + [name])
+  logging.debug('output fields: %s', out.fieldnames)
   out.writeheader()
-  for row in fh:
+  for idx, row in enumerate(fh):
+    logging.debug('processing line %i...', idx)
     for rule in rules:
       cond, newval = rule.split(':')
       condname, condval = re.split('[<=>]', cond)
       op = cond[len(condname)]
       if op == '<' and float(row[condname]) < float(condval):
         row[name] = newval
+        logging.debug('added %s to %s with <', newval, name)
         break
       elif op == '>' and float(row[condname]) > float(condval):
         row[name] = newval
+        logging.debug('added %s to %s with >', newval, name)
         break
       elif op == '=' and row[condname] == condval:
         row[name] = newval
+        logging.debug('added %s to %s with =', newval, name)
         break
     else:
       row[name] = value
+      logging.debug('added %s to %s', value, name)
     out.writerow(row)
 
 if __name__ == '__main__':
