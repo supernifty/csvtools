@@ -40,6 +40,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
     # first file
     logging.info('reading first file...')
     rows = collections.defaultdict(list)
+    extra = [] # items that don't match first file's keys
     lines = 0
     key_order = []
     for lines, row in enumerate(fhs[0]):
@@ -88,6 +89,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
               item.update({headers[fh_pos][row_num]: row[row_num] for row_num in range(len(row))})
         else:
           logging.debug('key %s not found on line %i with column number %s', val_of_interest, lines + 1, key_pos)
+          extra.append({headers[fh_pos][row_num]: row[row_num] for row_num in range(len(row))})
       logging.info('read %i lines', lines + 1)
 
     out = csv.writer(sys.stdout, delimiter=delimiter)
@@ -101,6 +103,13 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
         out_row = [row.get(column, '') for column in out_headers]
         out.writerow(out_row)
         written += 1
+    # rows with keys not seen in first file
+    for item in extra:
+      if inner:
+        continue
+      out_row = [item.get(column, '') for column in out_headers]
+      out.writerow(out_row)
+      written += 1
 
     logging.info('wrote %i lines', written)
 
