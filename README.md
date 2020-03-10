@@ -1,6 +1,11 @@
 # csvtools
 Tools to manipulate CSV files
 
+## csvflatten
+```
+csvflatten.py --key Key < test/3.csv
+```
+
 ## csvgroup
 Combine rows by grouping columns following a specified rule
 

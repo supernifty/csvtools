@@ -12,7 +12,7 @@ import csv
 import logging
 import sys
 
-def process(fhs, keys, delimiter, inner, key_length, horizontal):
+def process(fhs, keys, delimiter, inner, key_length, horizontal, left):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
@@ -56,7 +56,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
         key_order.append(val)
 
       # each line from the first file indexed on key value
-      logging.debug('adding key %s', val)
+      logging.debug('adding key %s to headers %s', val, headers)
       rows[val].append({headers[0][row_num]: row[row_num] for row_num in range(len(row))})
 
     logging.info('read %i lines from first file', lines + 1)
@@ -104,12 +104,13 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal):
         out.writerow(out_row)
         written += 1
     # rows with keys not seen in first file
-    for item in extra:
-      if inner:
-        continue
-      out_row = [item.get(column, '') for column in out_headers]
-      out.writerow(out_row)
-      written += 1
+    if not left:
+      for item in extra:
+        if inner:
+          continue
+        out_row = [item.get(column, '') for column in out_headers]
+        out.writerow(out_row)
+        written += 1
 
     logging.info('wrote %i lines', written)
 
@@ -124,6 +125,7 @@ def main():
     parser.add_argument('--delimiter', required=False, default=',', help='input files')
     parser.add_argument('--verbose', action='store_true', help='more logging')
     parser.add_argument('--inner', action='store_true', help='intersect')
+    parser.add_argument('--left', action='store_true', help='keys seen in first file')
     parser.add_argument('--horizontal', action='store_true', help='add additionally found records as new columns')
     args = parser.parse_args()
     if args.verbose:
@@ -131,7 +133,7 @@ def main():
     else:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-    process([csv.reader(open(fn, 'r'), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter, args.inner, args.key_length, args.horizontal)
+    process([csv.reader(open(fn, 'r'), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter, args.inner, args.key_length, args.horizontal, args.left)
 
 if __name__ == '__main__':
     main()

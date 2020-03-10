@@ -77,7 +77,7 @@ def main(colnames, delimiter, categorical, fh, out):
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Assess MSI')
-  parser.add_argument('--columns', required=True, nargs='+', help='columns to summarise')
+  parser.add_argument('--cols', '--columns', required=True, nargs='+', help='columns to summarise')
   parser.add_argument('--delimiter', required=False, default=',', help='input files')
   parser.add_argument('--categorical', action='store_true', help='data is categorical')
   parser.add_argument('--verbose', action='store_true', help='more logging')
@@ -87,4 +87,4 @@ if __name__ == '__main__':
   else:
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-  main(args.columns, args.delimiter, args.categorical, sys.stdin, sys.stdout)
+  main(args.cols, args.delimiter, args.categorical, sys.stdin, sys.stdout)
