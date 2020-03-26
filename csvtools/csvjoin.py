@@ -68,6 +68,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left):
       for lines, row in enumerate(fh): # each row in file of interest
         if lines % 1000 == 0:
           logging.info('processed %i lines...', lines)
+          logging.debug('finding keys %s in header %s', key, headers_map[fh_pos])
         key_pos = [headers_map[fh_pos][keyname] for keyname in key.split(',')] # which column is the key in this file?
         if key_length is None:
           val_of_interest = tuple([row[keyname] for keyname in key_pos]) # what is the value of the index for this file?

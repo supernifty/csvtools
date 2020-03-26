@@ -12,7 +12,7 @@ import csv
 import logging
 import sys
 
-def process(fh, rules):
+def process(fh, rules, delimiter):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
@@ -21,7 +21,7 @@ def process(fh, rules):
     headers = next(fh)
     colmap = {name: pos for pos, name in enumerate(headers)}
 
-    out = csv.writer(sys.stdout)
+    out = csv.writer(sys.stdout, delimiter=delimiter)
     out.writerow(headers)
     matched = collections.defaultdict(int)
     lines = 0
@@ -45,7 +45,7 @@ def main():
     parser.add_argument('--map', nargs='+', help='rules to apply to data of the form fieldname,oldvalue,newvalue')
     parser.add_argument('--delimiter', default=',', help='file delimiter')
     args = parser.parse_args()
-    process(csv.reader(sys.stdin, delimiter=args.delimiter), args.map)
+    process(csv.reader(sys.stdin, delimiter=args.delimiter), args.map, args.delimiter)
 
 if __name__ == '__main__':
     main()
