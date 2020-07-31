@@ -11,7 +11,7 @@ import logging
 import operator
 import sys
 
-def process(fh, cols, op, dest, delimiter, default_newval=-1, join_string=' '):
+def process(fh, cols, op, dest, delimiter, default_newval=-1, join_string=' ', format_dest=None):
     '''
       apply operation and write to dest
     '''
@@ -49,6 +49,9 @@ def process(fh, cols, op, dest, delimiter, default_newval=-1, join_string=' '):
         logging.warn('Failed to process line %i with rows %s', idx, ' '.join(['{}={}'.format(colname, row[colname]) for colname in cols]))
         newval = default_newval
 
+      if format_dest is not None:
+        newval = ('{:%s}' % format_dest).format(newval)
+
       row[dest] = newval
       out.writerow(row)
 
@@ -63,10 +66,11 @@ def main():
     parser.add_argument('--cols', nargs='*', required=False, help='column name')
     parser.add_argument('--op', required=True, help='operation sum, diff, product, divide, min, max, maxcol, concat, inc')
     parser.add_argument('--join_string', required=False, default=' ', help='how to join concat')
+    parser.add_argument('--format', required=False, help='how to format output')
     parser.add_argument('--dest', required=True, help='column name to add')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     args = parser.parse_args()
-    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.op, args.dest, args.delimiter, join_string=args.join_string)
+    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.op, args.dest, args.delimiter, join_string=args.join_string, format_dest=args.format)
 
 if __name__ == '__main__':
     main()

@@ -19,7 +19,7 @@ def main(name, value, delimiter, rules):
     logging.debug('processing line %i...', idx)
     for rule in rules:
       cond, newval = rule.split(':')
-      condname, condval = re.split('[<=>]', cond)
+      condname, condval = re.split('[<=>%]', cond)
       op = cond[len(condname)]
       if op == '<' and float(row[condname]) < float(condval):
         row[name] = newval
@@ -33,6 +33,10 @@ def main(name, value, delimiter, rules):
         row[name] = newval
         logging.debug('added %s to %s with =', newval, name)
         break
+      elif op == '%' and condval in row[condname]:
+        row[name] = newval
+        logging.debug('added %s to %s with %', newval, name)
+        break
     else:
       row[name] = value
       logging.debug('added %s to %s', value, name)
@@ -42,7 +46,7 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Add column to tsv')
   parser.add_argument('--name', required=True, help='col name')
   parser.add_argument('--value', required=False, default='', help='default col value')
-  parser.add_argument('--rule', required=False, nargs='*', default=[], help='rule for value of the form col[<=>]val:colval')
+  parser.add_argument('--rule', required=False, nargs='*', default=[], help='rule for value of the form col[<=>%]val:colval')
   parser.add_argument('--delimiter', required=False, default=',', help='delimiter')
   parser.add_argument('--verbose', action='store_true', help='more logging')
   args = parser.parse_args()
