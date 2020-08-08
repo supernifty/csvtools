@@ -68,7 +68,6 @@ def main():
     '''
         parse command line arguments
     '''
-    logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Filter CSV based on values')
     parser.add_argument('--cols', nargs='*', required=False, help='column name')
     parser.add_argument('--op', required=True, help='operation sum, diff, product, divide, min, max, maxcol, concat, inc, rank')
@@ -77,7 +76,12 @@ def main():
     parser.add_argument('--format', required=False, help='how to format output')
     parser.add_argument('--dest', required=True, help='column name to add')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
+    parser.add_argument('--verbose', action='store_true', help='more logging')
     args = parser.parse_args()
+    if args.verbose:
+      logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
+    else:
+      logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
     process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.op, args.dest, args.delimiter, join_string=args.join_string, format_dest=args.format, rank_count=args.rank_count)
 
 if __name__ == '__main__':

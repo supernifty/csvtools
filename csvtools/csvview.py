@@ -34,10 +34,10 @@ def process(fh, delimiter, out, mode):
         rows.append(row)
       # now print
       logging.info('writing %i rows...', idx + 1)
-      out.write(delimiter.join([x.ljust(widths[x]) for x in fh.fieldnames])) # header
+      out.write(' '.join([x.ljust(widths[x]) for x in fh.fieldnames])) # header
       out.write('\n')
       for row in rows:
-        out.write(delimiter.join([row[x].ljust(widths[x]) for x in fh.fieldnames]))
+        out.write(' '.join([row[x].ljust(widths[x]) for x in fh.fieldnames]))
         out.write('\n')
     else:
       logging.warn('unrecognized mode %s', mode)
