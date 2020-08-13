@@ -123,7 +123,7 @@ def process(fh, filters, delimiter, any_filter):
                   written += 1
 
         if lines % 100000 == 0:
-          logging.info('%i lines processed, wrote %i...', lines, written)
+          logging.info('%i lines processed, wrote %i. last row read: %s...', lines, written, row)
 
     logging.info('wrote %i of %i', written, lines + 1)
     logging.info('filtered: %s', ' '.join(['{}: {}'.format(key, skipped[key]) for key in skipped]))
