@@ -5,8 +5,15 @@
 
 import argparse
 import csv
+import gzip
 import logging
 import sys
+
+def get_fh(fn):
+  if fn.endswith('.gz'):
+    return gzip.open(fn, 'rt')
+  else:
+    return open(fn, 'r')
 
 def process(csvs, union, delimiter, default_value):
     '''
@@ -14,7 +21,7 @@ def process(csvs, union, delimiter, default_value):
         write out only columns that are in all csv files
     '''
     logging.info('merging %i files...', len(csvs))
-    fhs = [csv.reader(open(filename, 'r'), delimiter=delimiter) for filename in csvs]
+    fhs = [csv.reader(get_fh(filename), delimiter=delimiter) for filename in csvs]
     headers_list = [next(fh) for fh in fhs] # column names for each csv
     headers = [set(header) for header in headers_list]
     intersection = []

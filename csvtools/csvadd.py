@@ -46,7 +46,7 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Add column to tsv')
   parser.add_argument('--name', required=True, help='col name')
   parser.add_argument('--value', required=False, default='', help='default col value')
-  parser.add_argument('--rule', required=False, nargs='*', default=[], help='rule for value of the form col[<=>%]val:colval')
+  parser.add_argument('--rule', required=False, nargs='*', default=[], help='rule for value of the form col[<=>%%]val:colval')
   parser.add_argument('--delimiter', required=False, default=',', help='delimiter')
   parser.add_argument('--verbose', action='store_true', help='more logging')
   args = parser.parse_args()
