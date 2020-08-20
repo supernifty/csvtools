@@ -6,8 +6,17 @@
 import argparse
 import collections
 import csv
+import gzip
 import logging
 import sys
+
+def get_fh(fh):
+  c = fh.read(1)
+  fh.seek(0)
+  if ord(c) == 0x1f:
+    return gzip.open(fh, 'rt')
+  else:
+    return fh
 
 def process(fh, cols, exclude, exclude_ends_with, delimiter):
     '''
@@ -62,7 +71,7 @@ def main():
     else:
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.exclude, args.exclude_ends_with, args.delimiter)
+    process(csv.DictReader(get_fh(sys.stdin.buffer), delimiter=args.delimiter), args.cols, args.exclude, args.exclude_ends_with, args.delimiter)
 
 if __name__ == '__main__':
     main()
