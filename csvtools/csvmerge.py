@@ -5,16 +5,23 @@
 
 import argparse
 import csv
+import gzip
 import logging
 import sys
 
-def process(csvs, union, delimiter):
+def get_fh(fn):
+  if fn.endswith('.gz'):
+    return gzip.open(fn, 'rt')
+  else:
+    return open(fn, 'r')
+
+def process(csvs, union, delimiter, default_value):
     '''
         read in each csv file, look at the header of each
         write out only columns that are in all csv files
     '''
     logging.info('merging %i files...', len(csvs))
-    fhs = [csv.reader(open(filename, 'r'), delimiter=delimiter) for filename in csvs]
+    fhs = [csv.reader(get_fh(filename), delimiter=delimiter) for filename in csvs]
     headers_list = [next(fh) for fh in fhs] # column names for each csv
     headers = [set(header) for header in headers_list]
     intersection = []
@@ -49,7 +56,7 @@ def process(csvs, union, delimiter):
                 if val in headers_list[idx]:
                   outline.append(row[headers_list[idx].index(val)])
                 else:
-                  outline.append('') # no value
+                  outline.append(default_value) # no value
             out.writerow(outline)
         logging.info('processing %s: wrote %i lines', csvs[idx], lines + 1)
 
@@ -62,6 +69,7 @@ def main():
     parser.add_argument('csvs', nargs='+', help='csv files to merge')
     parser.add_argument('--union', default=False, action='store_true', help='keep all columns')
     parser.add_argument('--delimiter', required=False, default=',', help='input file delimiter')
+    parser.add_argument('--default', required=False, default='', help='default value for missing values')
     parser.add_argument('--verbose', action='store_true', help='more logging')
     args = parser.parse_args()
     if args.verbose:
@@ -69,7 +77,7 @@ def main():
     else:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
     args = parser.parse_args()
-    process(args.csvs, args.union, args.delimiter)
+    process(args.csvs, args.union, args.delimiter, args.default)
 
 if __name__ == '__main__':
     main()

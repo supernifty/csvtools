@@ -12,7 +12,7 @@ import csv
 import logging
 import sys
 
-def process(fhs, keys, delimiter, inner, key_length, horizontal, left):
+def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match_up_to):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
@@ -21,6 +21,9 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left):
     headers_map = []
     headers = []
     out_headers = []
+
+    while len(keys) < len(fhs):
+      keys.append(keys[-1])
 
     for file_num, (key, fh) in enumerate(zip(keys, fhs)):
       header = next(fh)
@@ -52,6 +55,9 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left):
       else:
         val = (row[key_pos[0]][:key_length],) # with key_pos we only support one key
 
+      if key_match_up_to is not None:
+        val = tuple([v.split(key_match_up_to)[0] for v in val])
+
       if val not in key_order:
         key_order.append(val)
 
@@ -74,6 +80,10 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left):
           val_of_interest = tuple([row[keyname] for keyname in key_pos]) # what is the value of the index for this file?
         else:
           val_of_interest = (row[key_pos[0]][:key_length],)
+
+        if key_match_up_to is not None:
+          val_of_interest = tuple([v.split(key_match_up_to)[0] for v in val_of_interest])
+
         if val_of_interest in rows:
           keys_seen[val_of_interest] += 1
           if keys_seen[val_of_interest] > 1:
@@ -122,6 +132,7 @@ def main():
     parser = argparse.ArgumentParser(description='Merge CSVs based on key')
     parser.add_argument('--keys', nargs='+', help='column names (comma separated for multiple keys)')
     parser.add_argument('--key_length', type=int, required=False, help='only match first part of keys')
+    parser.add_argument('--key_match_up_to', required=False, help='match up to string')
     parser.add_argument('--files', nargs='+', help='input files')
     parser.add_argument('--delimiter', required=False, default=',', help='input files')
     parser.add_argument('--verbose', action='store_true', help='more logging')
@@ -134,7 +145,7 @@ def main():
     else:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-    process([csv.reader(open(fn, 'r'), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter, args.inner, args.key_length, args.horizontal, args.left)
+    process([csv.reader(open(fn, 'r'), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter, args.inner, args.key_length, args.horizontal, args.left, args.key_match_up_to)
 
 if __name__ == '__main__':
     main()
