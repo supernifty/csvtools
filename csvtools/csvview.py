@@ -15,7 +15,7 @@ def process(fh, delimiter, out, mode):
     '''
       apply operation and write to dest
     '''
-    logging.info('reading from stdin...')
+    logging.info('csvview: reading from stdin...')
     if mode == 'vertical':
       for idx, row in enumerate(fh):
         out.write('Row\t{}\n'.format(idx + 1))
@@ -60,6 +60,7 @@ def main():
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.WARN)
     else:
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
+
     process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.delimiter, sys.stdout, args.mode)
 
 if __name__ == '__main__':

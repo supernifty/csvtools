@@ -9,6 +9,14 @@ import csv
 import logging
 import sys
 
+def is_numeric(value, line, colname):
+  try:
+    _ = float(value)
+    return True
+  except ValueError:
+    logging.info('line %i: %s is not numeric: %s', line, colname, value)
+    return False
+
 def process(fh, filters, delimiter, any_filter):
     '''
         read in csv file, look at the header of each
@@ -25,6 +33,7 @@ def process(fh, filters, delimiter, any_filter):
     gt = collections.defaultdict(float)
     ne = collections.defaultdict(set)
     contains = collections.defaultdict(set)
+    starts = collections.defaultdict(set)
     for rule in filters:
       if '=' in rule:
         colname, value = rule.split('=')
@@ -32,6 +41,9 @@ def process(fh, filters, delimiter, any_filter):
       elif '%' in rule:
         colname, value = rule.split('%')
         contains[colname].add(value)
+      elif '^' in rule:
+        colname, value = rule.split('^')
+        starts[colname].add(value)
       elif '!' in rule:
         colname, value = rule.split('!')
         ne[colname].add(value)
@@ -42,7 +54,7 @@ def process(fh, filters, delimiter, any_filter):
         colname, value = rule.split('>')
         gt[colname] = float(value)
 
-    logging.info('affected columns: %s %s %s %s %s', ' '.join(eq.keys()), ' '.join(lt.keys()), ' '.join(gt.keys()), ' '.join(ne.keys()), ' '.join(contains.keys()))
+    logging.info('affected columns: %s %s %s %s %s %s', ' '.join(eq.keys()), ' '.join(lt.keys()), ' '.join(gt.keys()), ' '.join(ne.keys()), ' '.join(contains.keys()), ' '.join(starts.keys()))
     
     skipped = collections.defaultdict(int)
     for lines, row in enumerate(fh):
@@ -80,7 +92,7 @@ def process(fh, filters, delimiter, any_filter):
           if any_filter or ok:
             # check lt
             for rule in lt:
-              if float(row[rule]) >= lt[rule]: # lt fail
+              if not is_numeric(row[rule], lines, rule) or float(row[rule]) >= lt[rule]: # lt fail
                 ok = False
                 skipped[rule] += 1
                 if not any_filter:
@@ -95,7 +107,7 @@ def process(fh, filters, delimiter, any_filter):
             if any_filter or ok:
               # check lt
               for rule in gt:
-                if float(row[rule]) <= gt[rule]: # gt fail
+                if not is_numeric(row[rule], lines, rule) or float(row[rule]) <= gt[rule]: # gt fail
                   ok = False
                   skipped[rule] += 1
                   if not any_filter:
@@ -108,8 +120,8 @@ def process(fh, filters, delimiter, any_filter):
                 written += 1
                 continue
               if any_filter or ok:
-                for rule in contains: # each row
-                  if all(x not in row[rule] for x in contains[rule]):
+                for rule in starts: # each row
+                  if all(not row[rule].startswith(x) for x in starts[rule]):
                     ok = False
                     skipped[rule] += 1
                     if not any_filter:
@@ -117,10 +129,25 @@ def process(fh, filters, delimiter, any_filter):
                   elif any_filter:
                     done = True
                     break
-
-                if done or ok:
+                if done:
                   out.writerow(row)
                   written += 1
+                  continue
+  
+                if any_filter or ok:
+                  for rule in contains: # each row
+                    if all(x not in row[rule] for x in contains[rule]):
+                      ok = False
+                      skipped[rule] += 1
+                      if not any_filter:
+                        break
+                    elif any_filter:
+                      done = True
+                      break
+  
+                  if done or ok:
+                    out.writerow(row)
+                    written += 1
 
         if lines % 100000 == 0:
           logging.info('%i lines processed, wrote %i...', lines, written)
@@ -133,7 +160,7 @@ def main():
         parse command line arguments
     '''
     parser = argparse.ArgumentParser(description='Filter rows')
-    parser.add_argument('--filters', nargs='+', help='colname[<=>!%%]valname... same colname is or, different colname is and')
+    parser.add_argument('--filters', nargs='+', help='colname[<=>!%%^]valname... same colname is or, different colname is and')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     parser.add_argument('--any', action='store_true', help='allow if any filter is true (default is and)')
     parser.add_argument('--verbose', action='store_true', default=False, help='more logging')
