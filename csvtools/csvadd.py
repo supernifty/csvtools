@@ -36,6 +36,7 @@ def main(name, value, delimiter, rules):
       elif op == '!' and row[condname] != condval:
         row[name] = newval
         logging.debug('added %s to %s with !', newval, name)
+        break
       elif op == '%' and condval in row[condname]:
         row[name] = newval
         logging.debug('added %s to %s with %', newval, name)

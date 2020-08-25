@@ -62,7 +62,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match
         key_order.append(val)
 
       # each line from the first file indexed on key value
-      logging.debug('adding key %s to headers %s', val, headers)
+      #logging.debug('adding key %s to headers %s', val, headers)
       rows[val].append({headers[0][row_num]: row[row_num] for row_num in range(len(row))})
 
     logging.info('read %i lines from first file', lines + 1)
@@ -84,6 +84,8 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match
         if key_match_up_to is not None:
           val_of_interest = tuple([v.split(key_match_up_to)[0] for v in val_of_interest])
 
+        logging.debug('val of interest is "%s"', val_of_interest)
+
         if val_of_interest in rows:
           keys_seen[val_of_interest] += 1
           if keys_seen[val_of_interest] > 1:
@@ -97,6 +99,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match
                 out_headers.append('{}_{}'.format(headers[fh_pos][row_num], keys_seen[val_of_interest]))
           else: # normal
             for item in rows[val_of_interest]:
+              logging.debug('updating %s with %s: %s', item, val_of_interest, [row[row_num] for row_num in range(len(row))])
               item.update({headers[fh_pos][row_num]: row[row_num] for row_num in range(len(row))})
         else:
           logging.debug('key %s not found on line %i with column number %s', val_of_interest, lines + 1, key_pos)

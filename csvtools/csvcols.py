@@ -74,7 +74,7 @@ def main():
     else:
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-    process(csv.DictReader(get_fh(sys.stdin), delimiter=args.delimiter), args.cols, args.exclude, args.exclude_ends_with, args.delimiter)
+    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.exclude, args.exclude_ends_with, args.delimiter)
 
 if __name__ == '__main__':
     main()
