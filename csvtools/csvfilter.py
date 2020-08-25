@@ -14,7 +14,7 @@ def is_numeric(value, line, colname):
     _ = float(value)
     return True
   except ValueError:
-    logging.info('line %i: %s is not numeric: %s', line, colname, value)
+    logging.debug('line %i: %s is not numeric: %s', line, colname, value)
     return False
 
 def process(fh, filters, delimiter, any_filter):

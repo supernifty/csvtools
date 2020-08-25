@@ -12,7 +12,7 @@ import csv
 import logging
 import sys
 
-def process(fh, rules, delimiter):
+def process(fh, rules, delimiter, ignore_missing):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
@@ -28,6 +28,12 @@ def process(fh, rules, delimiter):
     for lines, row in enumerate(fh):
         for rule in rules:
             colname, oldvalue, newvalue = rule.split(',')
+            if colname not in colmap:
+              if ignore_missing:
+                continue
+              else:
+                logging.fatal("Column {} not found".format(colname))
+                sys.exit(1)
             if row[colmap[colname]] == oldvalue:
                 matched[colname] += 1
                 row[colmap[colname]] = newvalue
@@ -43,9 +49,10 @@ def main():
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Update CSV column values')
     parser.add_argument('--map', nargs='+', help='rules to apply to data of the form fieldname,oldvalue,newvalue')
+    parser.add_argument('--ignore_missing', action='store_true', help='missing columns are OK')
     parser.add_argument('--delimiter', default=',', help='file delimiter')
     args = parser.parse_args()
-    process(csv.reader(sys.stdin, delimiter=args.delimiter), args.map, args.delimiter)
+    process(csv.reader(sys.stdin, delimiter=args.delimiter), args.map, args.delimiter, args.ignore_missing)
 
 if __name__ == '__main__':
     main()
