@@ -6,8 +6,20 @@
 import argparse
 import collections
 import csv
+import gzip
 import logging
 import sys
+
+def get_fh(fh):
+  try:
+    c = fh.read(1)
+    fh.seek(0)
+    if ord(c) == 0x1f:
+      return gzip.open(fh, 'rt')
+    else:
+      return fh
+  except:
+    return sys.stdin
 
 def safe_float(v, default):
   if v in ('nan', 'inf'):
@@ -61,7 +73,7 @@ def main():
     else:
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.numeric, args.desc, args.delimiter)
+    process(csv.DictReader(get_fh(sys.stdin.buffer), delimiter=args.delimiter), args.cols, args.numeric, args.desc, args.delimiter)
 
 if __name__ == '__main__':
     main()
