@@ -11,12 +11,15 @@ import logging
 import sys
 
 def get_fh(fh):
-  c = fh.read(1)
-  fh.seek(0)
-  if ord(c) == 0x1f:
-    return gzip.open(fh, 'rt')
-  else:
-    return fh
+  try:
+    c = fh.read(1)
+    fh.seek(0)
+    if ord(c) == 0x1f:
+      return gzip.open(fh, 'rt')
+    else:
+      return fh
+  except:
+    return sys.stdin
 
 def process(fh, cols, exclude, exclude_ends_with, delimiter):
     '''
