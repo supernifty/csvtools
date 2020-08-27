@@ -17,7 +17,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match
         read in csv file, look at the header of each
         apply rule to each field (in order)
     '''
-    logging.info('reading files...')
+    logging.info('reading %i files...', len(fhs))
     headers_map = []
     headers = []
     out_headers = []
@@ -26,7 +26,9 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match
       keys.append(keys[-1])
 
     for file_num, (key, fh) in enumerate(zip(keys, fhs)):
+      logging.debug('reading header of file %i with key %s...', file_num, key)
       header = next(fh)
+      logging.debug('reading header of file %i: %s', file_num, header)
       if not horizontal or file_num == 0:
         out_headers = out_headers + header 
       else:
@@ -36,7 +38,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match
       headers.append(header)
       for keyname in key.split(','):
         if keyname not in colmap:
-          logging.warn('key %s not found', keyname)
+          logging.warn('key %s not found in file %i', keyname, file_num)
 
     logging.debug(sorted(out_headers))
 
@@ -49,7 +51,8 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match
     for lines, row in enumerate(fhs[0]):
       if lines % 1000 == 0:
         logging.info('processed %i lines...', lines)
-      key_pos = [headers_map[0][key] for key in keys[0].split(',')]
+      key_pos = [headers_map[0][key] for key in keys[0].split(',')] # where are our key(s)
+      #logging.debug('key_pos is %s and there are %i columns', key_pos, len(row))
       if key_length is None:
         val = tuple([row[key] for key in key_pos])
       else:

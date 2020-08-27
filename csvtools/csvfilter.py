@@ -184,7 +184,7 @@ def main():
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.WARN)
     else:
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
-    process(csv.DictReader(get_fh(sys.stdin.buffer), delimiter=args.delimiter), args.filters, args.delimiter, args.any)
+    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.filters, args.delimiter, args.any)
 
 if __name__ == '__main__':
     main()
