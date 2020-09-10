@@ -26,25 +26,24 @@ def process(fh, cols, exclude, exclude_ends_with, delimiter):
         read in csv file, look at the header of each
         apply rule to each field (in order)
     '''
-    logging.info('reading from stdin...')
+    logging.info('csvcols: reading from stdin...')
     out = csv.writer(sys.stdout, delimiter=delimiter)
 
     if not exclude:
       include = cols
-      out.writerow(cols)
+      out.writerow(cols) # write header
+      logging.debug('csvcols: new header is %s', cols)
+    else:
+      include = []
+      for colname in fh.fieldnames:
+        if colname not in cols and (exclude_ends_with is None or not colname.endswith(exclude_ends_with)):
+          include.append(colname)
+            
+      out.writerow(include) # write header
+      logging.debug('csvcols: new header is %s', include)
 
     lines = 0
-    first = True
     for lines, row in enumerate(fh):
-      if exclude and first:
-        first = False
-        include = []
-        for colname in row.keys():
-          if colname not in cols and (exclude_ends_with is None or not colname.endswith(exclude_ends_with)):
-            include.append(colname)
-            
-        out.writerow(include)
-
       outrow = []
       for col in include:
         if col in row:
@@ -53,13 +52,13 @@ def process(fh, cols, exclude, exclude_ends_with, delimiter):
           outrow.append('')
       out.writerow(outrow)
 
-    logging.info('read and wrote %i rows', lines + 1)
+    logging.info('csvcols: read and wrote %i rows', lines + 1)
 
 def main():
     '''
         parse command line arguments
     '''
-    parser = argparse.ArgumentParser(description='Update CSV column values')
+    parser = argparse.ArgumentParser(description='Filter column names')
     parser.add_argument('--cols', required=True, nargs='+', help='columns to include')
     parser.add_argument('--exclude', action='store_true', help='exclude instead')
     parser.add_argument('--exclude_ends_with', required=False, help='additional exclude rule')

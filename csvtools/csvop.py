@@ -12,13 +12,13 @@ import math
 import operator
 import sys
 
-def process(fh, cols, op, dest, delimiter, default_newval=-1, join_string=' ', format_dest=None, rank_count=None):
+def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', format_dest=None):
     '''
       apply operation and write to dest
     '''
     logging.info('reading from stdin...')
     out = csv.writer(sys.stdout, delimiter=delimiter)
-    out = csv.DictWriter(sys.stdout, delimiter=delimiter, fieldnames=fh.fieldnames + [dest])
+    out = csv.DictWriter(sys.stdout, delimiter=delimiter, fieldnames=fh.fieldnames + dests)
     out.writeheader()
     for idx, row in enumerate(fh):
       try:
@@ -45,9 +45,13 @@ def process(fh, cols, op, dest, delimiter, default_newval=-1, join_string=' ', f
         elif op == 'rank':
            subset = {col: float(row[col]) for col in cols}
            s = sorted(subset, key=subset.get)[::-1]
-           if rank_count is not None:
-             s = s[:rank_count]
-           newval = ' '.join(['{}({})'.format(x, row[x]) for x in s])
+           if len(dests) > 1:
+             for idx in range(0, len(dests)):
+               row[dests[idx]] = '{} {}'.format(s[idx], row[s[idx]])
+             newval = '{} {}'.format(s[0], row[s[0]])
+           else: # push into one column
+             newval = ' '.join(['{}({})'.format(x, row[x]) for x in s])
+
         elif op == 'concat':
           newval = join_string.join([row[col] for col in cols])
         elif op == 'inc':
@@ -61,8 +65,8 @@ def process(fh, cols, op, dest, delimiter, default_newval=-1, join_string=' ', f
       if format_dest is not None:
         newval = ('{:%s}' % format_dest).format(newval)
 
-      logging.debug('writing %s to %s', newval, dest)
-      row[dest] = newval
+      logging.debug('writing %s to %s', newval, dests[0])
+      row[dests[0]] = newval
       out.writerow(row)
 
     logging.info('done')
@@ -75,9 +79,8 @@ def main():
     parser.add_argument('--cols', nargs='*', required=False, help='column name')
     parser.add_argument('--op', required=True, help='operation sum, diff, product, divide, min, max, maxcol, concat, inc, log, rank')
     parser.add_argument('--join_string', required=False, default=' ', help='how to join concat')
-    parser.add_argument('--rank_count', required=False, type=int, help='how many to include in rank')
     parser.add_argument('--format', required=False, help='how to format output')
-    parser.add_argument('--dest', required=True, help='column name to add')
+    parser.add_argument('--dests', required=True, nargs='+', help='column name(s) to add')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     parser.add_argument('--verbose', action='store_true', help='more logging')
     args = parser.parse_args()
@@ -85,7 +88,7 @@ def main():
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     else:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
-    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.op, args.dest, args.delimiter, join_string=args.join_string, format_dest=args.format, rank_count=args.rank_count)
+    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.op, args.dests, args.delimiter, join_string=args.join_string, format_dest=args.format)
 
 if __name__ == '__main__':
     main()

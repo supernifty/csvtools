@@ -19,7 +19,8 @@ def process(fh, delimiter, out, mode):
     if mode == 'vertical':
       for idx, row in enumerate(fh):
         out.write('Row\t{}\n'.format(idx + 1))
-        for key in sorted(row.keys()):
+        logging.debug('row names: %s', row.keys())
+        for key in sorted([x for x in row.keys() if x is not None]):
           out.write('{}\t{}\n'.format(key, row[key]))
         out.write('\n')
     elif mode == 'horizontal':
