@@ -10,6 +10,7 @@ import argparse
 import collections
 import csv
 import logging
+import re
 import sys
 
 def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match_up_to):
@@ -52,14 +53,17 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match
       if lines % 1000 == 0:
         logging.info('processed %i lines...', lines)
       key_pos = [headers_map[0][key] for key in keys[0].split(',')] # where are our key(s)
-      #logging.debug('key_pos is %s and there are %i columns', key_pos, len(row))
+      logging.debug('key_pos is %s and there are %i columns', key_pos, len(row))
       if key_length is None:
         val = tuple([row[key] for key in key_pos])
       else:
         val = (row[key_pos[0]][:key_length],) # with key_pos we only support one key
 
       if key_match_up_to is not None:
-        val = tuple([v.split(key_match_up_to)[0] for v in val])
+        if '|' in key_match_up_to:
+          logging.warn('| in key_match_up_to likely to cause trouble')
+        val = tuple([re.split('|'.join(key_match_up_to), v)[0] for v in val])
+        #val = tuple([v.split(key_match_up_to)[0] for v in val])
 
       if val not in key_order:
         key_order.append(val)
@@ -85,7 +89,10 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match
           val_of_interest = (row[key_pos[0]][:key_length],)
 
         if key_match_up_to is not None:
-          val_of_interest = tuple([v.split(key_match_up_to)[0] for v in val_of_interest])
+          if '|' in key_match_up_to:
+            logging.warn('| in key_match_up_to likely to cause trouble')
+          val_of_interest = tuple([re.split('|'.join(key_match_up_to), v)[0] for v in val_of_interest])
+          #val_of_interest = tuple([v.split(key_match_up_to)[0] for v in val_of_interest])
 
         logging.debug('val of interest is "%s"', val_of_interest)
 
@@ -138,7 +145,7 @@ def main():
     parser = argparse.ArgumentParser(description='Merge CSVs based on key')
     parser.add_argument('--keys', nargs='+', help='column names (comma separated for multiple keys)')
     parser.add_argument('--key_length', type=int, required=False, help='only match first part of keys')
-    parser.add_argument('--key_match_up_to', required=False, help='match up to string')
+    parser.add_argument('--key_match_up_to', nargs='+', required=False, help='match up to string')
     parser.add_argument('--files', nargs='+', help='input files')
     parser.add_argument('--delimiter', required=False, default=',', help='input files')
     parser.add_argument('--verbose', action='store_true', help='more logging')
