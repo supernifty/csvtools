@@ -16,72 +16,86 @@ def check(summary, col):
     summary[col] = {'n': 0, 'sum': 0, 'max': sys.float_info.min, 'min': sys.float_info.max, 'd': []}
   return summary
 
-def main(colnames, delimiter, categorical, fh, out, population_sd):
+def main(colnames, delimiter, categorical, fh, out, groupcol, population_sd):
   logging.info('starting...')
 
   reader = csv.DictReader(fh, delimiter=delimiter)
-  summary = {}
+  summary = collections.defaultdict(dict)
+  groups = set()
   if categorical:
-    for row in reader:
-      for col in colnames:
+    for row in reader: # each row
+      if groupcol is None:
+        group_name = 'All'
+      else:
+        group_name = row[groupcol]
+      groups.add(group_name)
+      for col in colnames: # each column of interest
         if col not in summary:
-          summary[col] = collections.defaultdict(int)
-        summary[col][row[col]] += 1
+          summary[group_name][col] = collections.defaultdict(int)
+        summary[group_name][col][row[col]] += 1
 
     # summarise
-    out.write('Value\tCount\n')
-    for col in colnames:
-      if len(colnames) > 1:
-        out.write('* Column\t{}\n'.format(col))
-      for key in sorted(summary[col].keys()):
-        out.write('{}\t{}\n'.format(key, summary[col][key]))
-      if len(colnames) > 1:
-        out.write('=======\n')
-  else:
-    summary = {}
-    for row in reader:
+    out.write('Group\tValue\tCount\n')
+    for group in sorted(groups):
       for col in colnames:
-        summary = check(summary, col)
+        if len(colnames) > 1:
+          out.write('* Column\t{}\n'.format(col))
+        for key in sorted(summary[group][col].keys()):
+          out.write('{}\t{}\t{}\n'.format(group, key, summary[group][col][key]))
+        if len(colnames) > 1:
+          out.write('=======\n')
+  else:
+    summary = collections.defaultdict(dict)
+    for row in reader:
+      if groupcol is None:
+        group_name = 'All'
+      else:
+        group_name = row[groupcol]
+      groups.add(group_name)
+      for col in colnames:
+        summary[group_name] = check(summary[group_name], col)
         if row[col] in ('nan', 'inf'):
           continue
         try:
           v = float(row[col])
         except:
           continue
-        summary[col]['n'] += 1
-        summary[col]['sum'] += v
-        summary[col]['max'] = max(summary[col]['max'], v)
-        summary[col]['min'] = min(summary[col]['min'], v)
-        summary[col]['d'].append(v)
+        summary[group_name][col]['n'] += 1
+        summary[group_name][col]['sum'] += v
+        summary[group_name][col]['max'] = max(summary[group_name][col]['max'], v)
+        summary[group_name][col]['min'] = min(summary[group_name][col]['min'], v)
+        summary[group_name][col]['d'].append(v)
   
     # write summary
-    out.write('name\tn\ttotal\tmin\tmax\tmean\tsd\tmedian\n')
-    for col in colnames:
-      if summary[col]['n'] > 0:
-        summary[col]['mean'] = summary[col]['sum'] / summary[col]['n']
-
-        if summary[col]['n'] % 2 == 0:
-          mid = int(summary[col]['n'] / 2)
-          summary[col]['median'] = (summary[col]['d'][mid] + summary[col]['d'][mid - 1]) / 2
-        else:
-          mid = int((summary[col]['n'] - 1) / 2)
-          summary[col]['median'] = summary[col]['d'][mid]
-
-        if summary[col]['n'] > 1:
-          if population_sd:
-            summary[col]['sd'] = numpy.std(summary[col]['d'], ddof=0)
+    out.write('group\tname\tn\ttotal\tmin\tmax\tmean\tsd\tmedian\n')
+    for group in groups:
+      for col in colnames:
+        if summary[group][col]['n'] > 0:
+          summary[group][col]['mean'] = summary[group][col]['sum'] / summary[group][col]['n']
+  
+          if summary[group][col]['n'] % 2 == 0:
+            mid = int(summary[group][col]['n'] / 2)
+            summary[group][col]['median'] = (summary[group][col]['d'][mid] + summary[group][col]['d'][mid - 1]) / 2
           else:
-            summary[col]['sd'] = numpy.std(summary[col]['d'], ddof=1)
+            mid = int((summary[group][col]['n'] - 1) / 2)
+            summary[group][col]['median'] = summary[group][col]['d'][mid]
+  
+          if summary[group][col]['n'] > 1:
+            if population_sd:
+              summary[group][col]['sd'] = numpy.std(summary[group][col]['d'], ddof=0)
+            else:
+              summary[group][col]['sd'] = numpy.std(summary[group][col]['d'], ddof=1)
+          else:
+            summary[group][col]['sd'] = 0
+          out.write('{}\t{}\t{}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\n'.format(group, col, summary[group][col]['n'], summary[group][col]['sum'], summary[group][col]['min'], summary[group][col]['max'], summary[group][col]['mean'], summary[group][col]['sd'], summary[group][col]['median']))
         else:
-          summary[col]['sd'] = 0
-        out.write('{}\t{}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\n'.format(col, summary[col]['n'], summary[col]['sum'], summary[col]['min'], summary[col]['max'], summary[col]['mean'], summary[col]['sd'], summary[col]['median']))
-      else:
-        out.write('{}\t0\t0\t-\t-\t-\t-\t-\n'.format(col))
+          out.write('{}\t{}\t0\t0\t-\t-\t-\t-\t-\n'.format(group_name, col))
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Basic stats of specified columns')
   parser.add_argument('--cols', '--columns', required=True, nargs='+', help='columns to summarise')
   parser.add_argument('--delimiter', required=False, default=',', help='input files')
+  parser.add_argument('--group', required=False, help='column to group on')
   parser.add_argument('--categorical', action='store_true', help='data is categorical')
   parser.add_argument('--population_sd', action='store_true', help='use population sd')
   parser.add_argument('--verbose', action='store_true', help='more logging')
@@ -94,4 +108,4 @@ if __name__ == '__main__':
   else:
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-  main(args.cols, args.delimiter, args.categorical, sys.stdin, sys.stdout, args.population_sd)
+  main(args.cols, args.delimiter, args.categorical, sys.stdin, sys.stdout, args.group, args.population_sd)
