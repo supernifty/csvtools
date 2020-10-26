@@ -19,7 +19,6 @@ def process(fh, delimiter, out, mode):
     if mode == 'vertical':
       for idx, row in enumerate(fh):
         out.write('Row\t{}\n'.format(idx + 1))
-        logging.debug('row names: %s', row.keys())
         for key in sorted([x for x in row.keys() if x is not None]):
           out.write('{}\t{}\n'.format(key, row[key]))
         out.write('\n')
@@ -48,7 +47,6 @@ def main():
     '''
         parse command line arguments
     '''
-    logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Filter CSV based on values')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     parser.add_argument('--mode', default='vertical', help='display mode (vertical, horizontal)')
@@ -56,11 +54,11 @@ def main():
     parser.add_argument('--verbose', action='store_true', default=False, help='more logging')
     args = parser.parse_args()
     if args.verbose:
-        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
+      logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     elif args.quiet:
-        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.WARN)
+      logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.WARNING)
     else:
-        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
+      logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
     process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.delimiter, sys.stdout, args.mode)
 

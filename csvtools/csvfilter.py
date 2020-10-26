@@ -45,6 +45,7 @@ def process(fh, filters, delimiter, any_filter):
     gt = collections.defaultdict(float)
     ne = collections.defaultdict(set)
     contains = collections.defaultdict(set)
+    not_contains = collections.defaultdict(set)
     starts = collections.defaultdict(set)
     for rule in filters:
       if '=' in rule:
@@ -53,6 +54,9 @@ def process(fh, filters, delimiter, any_filter):
       elif '%' in rule:
         colname, value = rule.split('%')
         contains[colname].add(value)
+      elif '~' in rule:
+        colname, value = rule.split('~')
+        not_contains[colname].add(value)
       elif '^' in rule:
         colname, value = rule.split('^')
         starts[colname].add(value)
@@ -145,10 +149,10 @@ def process(fh, filters, delimiter, any_filter):
                   out.writerow(row)
                   written += 1
                   continue
-  
+
                 if any_filter or ok:
-                  for rule in contains: # each row
-                    if all(x not in row[rule] for x in contains[rule]):
+                  for rule in not_contains: # each row
+                    if all(x in row[rule] for x in not_contains[rule]):
                       ok = False
                       skipped[rule] += 1
                       if not any_filter:
@@ -156,10 +160,25 @@ def process(fh, filters, delimiter, any_filter):
                     elif any_filter:
                       done = True
                       break
-  
-                  if done or ok:
+                  if done:
                     out.writerow(row)
                     written += 1
+                    continue
+   
+                  if any_filter or ok:
+                    for rule in contains: # each row
+                      if all(x not in row[rule] for x in contains[rule]):
+                        ok = False
+                        skipped[rule] += 1
+                        if not any_filter:
+                          break
+                      elif any_filter:
+                        done = True
+                        break
+  
+                    if done or ok:
+                      out.writerow(row)
+                      written += 1
 
         if lines % 100000 == 0:
           logging.info('%i lines processed, wrote %i. last row read: %s...', lines, written, row)
