@@ -75,7 +75,7 @@ def main():
     '''
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Filter CSV based on values')
-    parser.add_argument('--op', required=True, nargs='+', help='colname=[join|sum|sumint|count] ...')
+    parser.add_argument('--op', required=True, nargs='+', help='colname=[join|sum|sumint|count|max] ...')
     parser.add_argument('--join_string', required=False, default=' + ', help='join delimiter')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     args = parser.parse_args()

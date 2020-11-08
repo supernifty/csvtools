@@ -30,16 +30,22 @@ def main(colnames, delimiter, categorical, fh, out, groupcol, population_sd):
         group_name = row[groupcol]
       groups.add(group_name)
       for col in colnames: # each column of interest
-        if col not in summary:
+        if col not in summary[group_name]:
           summary[group_name][col] = collections.defaultdict(int)
         summary[group_name][col][row[col]] += 1
+        #logging.debug('added to group %s col %s with value %s', group_name, col, row[col])
+
+    # finished reading
 
     # summarise
     out.write('Group\tValue\tCount\n')
+    logging.debug('%i groups', len(groups))
     for group in sorted(groups):
+      logging.debug('%i columns', len(colnames))
       for col in colnames:
         if len(colnames) > 1:
           out.write('* Column\t{}\n'.format(col))
+        logging.debug('%i distinct values', len(summary[group][col].keys()))
         for key in sorted(summary[group][col].keys()):
           out.write('{}\t{}\t{}\n'.format(group, key, summary[group][col][key]))
         if len(colnames) > 1:
