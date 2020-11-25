@@ -41,7 +41,7 @@ def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', 
           newval = max(float(row[col]) for col in cols)
         elif op == 'maxcol': # column name of max
           candidates = {col: float(row[col]) for col in cols}
-          newval = max(row, key=candidates.get)
+          newval = max(candidates, key=candidates.get)
         elif op == 'rank':
            subset = {col: float(row[col]) for col in cols}
            s = sorted(subset, key=subset.get)[::-1]
@@ -61,7 +61,8 @@ def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', 
         else:
           logging.fatal('Unrecognised operation %s', op)
       except:
-        logging.warn('Failed to process line %i with rows %s', idx, ' '.join(['{}={}'.format(colname, row[colname]) for colname in cols]))
+        logging.warning('Failed to process line %i with rows %s', idx, ' '.join(['{}={}'.format(colname, row[colname]) for colname in cols]))
+        #raise
         newval = default_newval
 
       if op != 'format' and format_dest is not None:
@@ -84,13 +85,14 @@ def main():
     parser.add_argument('--format', required=False, help='how to format output (applies to rank, format)')
     parser.add_argument('--dests', required=True, nargs='+', help='column name(s) to add')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
+    parser.add_argument('--default_newval', default='-1', required=False, help='if dest cannot be populated')
     parser.add_argument('--verbose', action='store_true', help='more logging')
     args = parser.parse_args()
     if args.verbose:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     else:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
-    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.op, args.dests, args.delimiter, join_string=args.join_string, format_dest=args.format)
+    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.op, args.dests, args.delimiter, default_newval=args.default_newval, join_string=args.join_string, format_dest=args.format)
 
 if __name__ == '__main__':
     main()
