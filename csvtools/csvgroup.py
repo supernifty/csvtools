@@ -54,6 +54,11 @@ def process(fh, op, delimiter, join_string=' + '):
               out_rows[key][field] = row[field]
             else:
               out_rows[key][field] = join_string.join([out_rows[key][field], row[field]])
+          elif ops[field] == 'min':
+            if field not in out_rows[key]:
+              out_rows[key][field] = row[field]
+            else:
+              out_rows[key][field] = min([out_rows[key][field], row[field]])
           elif ops[field] == 'max':
             if field not in out_rows[key]:
               out_rows[key][field] = row[field]
@@ -75,7 +80,7 @@ def main():
     '''
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Filter CSV based on values')
-    parser.add_argument('--op', required=True, nargs='+', help='colname=[join|sum|sumint|count|max] ...')
+    parser.add_argument('--op', required=True, nargs='+', help='colname=[join|sum|sumint|count|min|max] ...')
     parser.add_argument('--join_string', required=False, default=' + ', help='join delimiter')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     args = parser.parse_args()
