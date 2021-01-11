@@ -19,13 +19,15 @@ def main(delimiter, fh, out):
   total = 0
   for row in reader: # each row
     total += 1
-    for rn in row:
+    for rn in row: # each column
       if row[rn] == '':
         summary[rn] += 1
+      else:
+        summary[rn] += 0
 
   # summarise
   out.write('Column\tEmpty\tPct\n')
-  for r in summary:
+  for r in sorted(summary):
     out.write('{}\t{}\t{:.3f}\n'.format(r, summary[r], summary[r] / total * 100))
 
 if __name__ == '__main__':
