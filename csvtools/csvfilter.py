@@ -6,20 +6,8 @@
 import argparse
 import collections
 import csv
-import gzip
 import logging
 import sys
-
-def get_fh(fh):
-  try:
-    c = fh.read(1)
-    fh.seek(0)
-    if ord(c) == 0x1f:
-      return gzip.open(fh, 'rt')
-    else:
-      return fh
-  except:
-    return sys.stdin
 
 def is_numeric(value, line, colname):
   try:

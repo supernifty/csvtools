@@ -56,6 +56,8 @@ def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', 
           newval = join_string.join([row[col] for col in cols])
         elif op == 'inc':
           newval = idx
+        elif op == 'truncate':
+          newval = row[col][:int(format_dest)]
         elif op == 'format':
           newval = '{}'.format(format_dest).format(**row)
         else:
@@ -80,9 +82,9 @@ def main():
     '''
     parser = argparse.ArgumentParser(description='Filter CSV based on values')
     parser.add_argument('--cols', nargs='*', required=False, help='column name')
-    parser.add_argument('--op', required=True, help='operation sum, diff, product, divide, min, max, maxcol, concat, inc, log, rank, format')
+    parser.add_argument('--op', required=True, help='operation sum, diff, product, divide, min, max, maxcol, concat, inc, log, rank, format, truncate')
     parser.add_argument('--join_string', required=False, default=' ', help='how to join concat')
-    parser.add_argument('--format', required=False, help='how to format output (applies to rank, format)')
+    parser.add_argument('--format', required=False, help='how to format output (applies to rank, format, truncate)')
     parser.add_argument('--dests', required=True, nargs='+', help='column name(s) to add')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     parser.add_argument('--default_newval', default='-1', required=False, help='if dest cannot be populated')

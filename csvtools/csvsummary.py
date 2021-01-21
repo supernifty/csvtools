@@ -38,7 +38,7 @@ def main(colnames, delimiter, categorical, fh, out, groupcol, population_sd):
     # finished reading
 
     # summarise
-    out.write('Group\tValue\tCount\n')
+    out.write('Group\tValue\tCount\tPct\n')
     logging.debug('%i groups', len(groups))
     for group in sorted(groups):
       logging.debug('%i columns', len(colnames))
@@ -46,8 +46,9 @@ def main(colnames, delimiter, categorical, fh, out, groupcol, population_sd):
         if len(colnames) > 1:
           out.write('* Column\t{}\n'.format(col))
         logging.debug('%i distinct values', len(summary[group][col].keys()))
+        total = sum([summary[group][col][x] for x in summary[group][col]])
         for key in sorted(summary[group][col].keys()):
-          out.write('{}\t{}\t{}\n'.format(group, key, summary[group][col][key]))
+          out.write('{}\t{}\t{}\t{:.6f}\n'.format(group, key, summary[group][col][key], summary[group][col][key] / total))
         if len(colnames) > 1:
           out.write('=======\n')
   else:

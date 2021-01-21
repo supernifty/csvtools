@@ -29,6 +29,8 @@ def main(colnames, delimiter, fh, out, duplicates):
         logging.warn(result)
       duplicates_fh.write('{}\n'.format(delimiter.join([row[col] for col in reader.fieldnames])))
     output[key] = row # keep last matching
+    if count < 10:
+      logging.debug(row)
     count += 1
 
   logging.info('read %i. writing...', count)
@@ -36,12 +38,14 @@ def main(colnames, delimiter, fh, out, duplicates):
   for key in sorted(output.keys()):
     writer.writerow(output[key])
     count += 1
+    if count < 10:
+      logging.debug('key: %s value: %s', key, output[key])
   
   logging.info('done writing %i', count)
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Assess MSI')
-  parser.add_argument('--columns', required=True, nargs='+', help='columns to use as index')
+  parser.add_argument('--cols', required=True, nargs='+', help='columns to use as index')
   parser.add_argument('--delimiter', required=False, default=',', help='input files')
   parser.add_argument('--duplicates', required=False, help='write duplicates to file')
   parser.add_argument('--verbose', action='store_true', help='more logging')
@@ -51,4 +55,4 @@ if __name__ == '__main__':
   else:
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-  main(args.columns, args.delimiter, sys.stdin, sys.stdout, args.duplicates)
+  main(args.cols, args.delimiter, sys.stdin, sys.stdout, args.duplicates)
