@@ -58,6 +58,8 @@ def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', 
           newval = idx
         elif op == 'truncate':
           newval = row[col][:int(format_dest)]
+        elif op == 'abs':
+          newval = abs(float(row[cols[0]]))
         elif op == 'format':
           newval = '{}'.format(format_dest).format(**row)
         else:
@@ -82,7 +84,7 @@ def main():
     '''
     parser = argparse.ArgumentParser(description='Filter CSV based on values')
     parser.add_argument('--cols', nargs='*', required=False, help='column name')
-    parser.add_argument('--op', required=True, help='operation sum, diff, product, divide, min, max, maxcol, concat, inc, log, rank, format, truncate')
+    parser.add_argument('--op', required=True, help='operation sum, diff, product, divide, min, max, maxcol, concat, inc, log, rank, format, truncate, abs')
     parser.add_argument('--join_string', required=False, default=' ', help='how to join concat')
     parser.add_argument('--format', required=False, help='how to format output (applies to rank, format, truncate)')
     parser.add_argument('--dests', required=True, nargs='+', help='column name(s) to add')

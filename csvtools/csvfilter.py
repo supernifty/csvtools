@@ -17,16 +17,24 @@ def is_numeric(value, line, colname):
     logging.debug('line %i: %s is not numeric: %s', line, colname, value)
     return False
 
-def process(fh, filters, delimiter, any_filter):
+def rule_succeeded(out, row, exclude):
+  logging.debug('entering rule_succeeded with exclude=%s for row=%s', exclude, row)
+  if not exclude:
+    out.writerow(row)
+
+def process(fh, filters, delimiter, any_filter, exclude=False, rows=None):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
     '''
     logging.info('reading from stdin...')
 
+    if filters is None:
+      filters = []
+
     out = csv.DictWriter(sys.stdout, delimiter=delimiter, fieldnames=fh.fieldnames)
     out.writeheader()
-    lines = written = 0
+    lines = passed = 0
 
     eq = collections.defaultdict(set) # equal to rule
     lt = collections.defaultdict(float)
@@ -62,21 +70,41 @@ def process(fh, filters, delimiter, any_filter):
     
     skipped = collections.defaultdict(int)
     for lines, row in enumerate(fh):
-        # check each rule
+        # check each rule for a fail
         ok = True
         done = False # for any_filter
+        # check lines
+        
+        if rows is not None:
+          row_ok = False
+          for row_rule in rows:
+            if '-' in row_rule:
+              row_range = [int(r) for r in row_rule.split('-')]
+              if row_range[0] <= lines + 1 <= row_range[1]:
+                row_ok = True
+                break
+            else:
+              if lines + 1 == int(row_rule):
+                row_ok = True
+                break
+          if not row_ok:
+            logging.debug('skipped row %i outside of row ranges', lines)
+            continue
+
+        # now rules
         for rule in eq: # each colname in rules
           if row[rule] not in eq[rule]: # doesn't match =
             ok = False
             skipped[rule] += 1
-            if not any_filter:
+            if not any_filter: # fail
               break
           elif any_filter: # success
             done = True
             break
+
         if done:
-          out.writerow(row)
-          written += 1
+          rule_succeeded(out, row, exclude)
+          passed += 1
           continue
 
         if any_filter or ok:
@@ -89,10 +117,12 @@ def process(fh, filters, delimiter, any_filter):
             elif any_filter: # success
               done = True
               break
+
           if done:
-            out.writerow(row)
-            written += 1
+            rule_succeeded(out, row, exclude)
+            passed += 1
             continue
+
           if any_filter or ok:
             # check lt
             for rule in lt:
@@ -104,10 +134,12 @@ def process(fh, filters, delimiter, any_filter):
               elif any_filter:
                 done = True
                 break
+
             if done:
-              out.writerow(row)
-              written += 1
+              rule_succeeded(out, row, exclude)
+              passed += 1
               continue
+
             if any_filter or ok:
               # check lt
               for rule in gt:
@@ -119,10 +151,12 @@ def process(fh, filters, delimiter, any_filter):
                 elif any_filter:
                   done = True
                   break
+
               if done:
-                out.writerow(row)
-                written += 1
+                rule_succeeded(out, row, exclude)
+                passed += 1
                 continue
+
               if any_filter or ok:
                 for rule in starts: # each row
                   if all(not row[rule].startswith(x) for x in starts[rule]):
@@ -133,9 +167,10 @@ def process(fh, filters, delimiter, any_filter):
                   elif any_filter:
                     done = True
                     break
+
                 if done:
-                  out.writerow(row)
-                  written += 1
+                  rule_succeeded(out, row, exclude)
+                  passed += 1
                   continue
 
                 if any_filter or ok:
@@ -148,9 +183,10 @@ def process(fh, filters, delimiter, any_filter):
                     elif any_filter:
                       done = True
                       break
+
                   if done:
-                    out.writerow(row)
-                    written += 1
+                    rule_succeeded(out, row, exclude)
+                    passed += 1
                     continue
    
                   if any_filter or ok:
@@ -165,13 +201,17 @@ def process(fh, filters, delimiter, any_filter):
                         break
   
                     if done or ok:
-                      out.writerow(row)
-                      written += 1
+                      rule_succeeded(out, row, exclude)
+                      passed += 1
+
+        # it got through all rules and something failed
+        if exclude and not ok:
+          rule_succeeded(out, row, False)
 
         if lines % 100000 == 0:
-          logging.info('%i lines processed, wrote %i. last row read: %s...', lines, written, row)
+          logging.info('%i lines processed, wrote %i. last row read: %s...', lines, passed, row)
 
-    logging.info('wrote %i of %i', written, lines + 1)
+    logging.info('wrote %i of %i', passed, lines + 1)
     logging.info('filtered: %s', ' '.join(['{}: {}'.format(key, skipped[key]) for key in skipped]))
 
 def main():
@@ -180,8 +220,10 @@ def main():
     '''
     parser = argparse.ArgumentParser(description='Filter rows')
     parser.add_argument('--filters', nargs='+', help='colname[<=>!%%^]valname... same colname is or, different colname is and')
+    parser.add_argument('--rows', nargs='+', required=False, help='row numbers to include n n1-n2')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     parser.add_argument('--any', action='store_true', help='allow if any filter is true (default is and)')
+    parser.add_argument('--exclude', action='store_true', default=False, help='write rows that fail test')
     parser.add_argument('--verbose', action='store_true', default=False, help='more logging')
     parser.add_argument('--quiet', action='store_true', default=False, help='less logging')
     args = parser.parse_args()
@@ -191,7 +233,7 @@ def main():
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.WARN)
     else:
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
-    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.filters, args.delimiter, args.any)
+    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.filters, args.delimiter, args.any, args.exclude, args.rows)
 
 if __name__ == '__main__':
     main()

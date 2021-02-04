@@ -17,13 +17,17 @@ def main(delimiter, fh, out):
   reader = csv.DictReader(fh, delimiter=delimiter)
   summary = collections.defaultdict(int)
   total = 0
-  for row in reader: # each row
+  for idx, row in enumerate(reader): # each row
     total += 1
+    this_row = 0
     for rn in row: # each column
       if row[rn] == '':
         summary[rn] += 1
+        this_row += 1
       else:
         summary[rn] += 0
+    if this_row > 0:
+      logging.debug('row %i: %i missing values', idx, this_row)
 
   # summarise
   out.write('Column\tEmpty\tPct\n')
