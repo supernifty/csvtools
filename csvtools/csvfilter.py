@@ -224,6 +224,7 @@ def main():
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     parser.add_argument('--any', action='store_true', help='allow if any filter is true (default is and)')
     parser.add_argument('--exclude', action='store_true', default=False, help='write rows that fail test')
+    parser.add_argument('--encoding', default='utf-8', help='file encoding')
     parser.add_argument('--verbose', action='store_true', default=False, help='more logging')
     parser.add_argument('--quiet', action='store_true', default=False, help='less logging')
     args = parser.parse_args()
@@ -233,6 +234,7 @@ def main():
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.WARN)
     else:
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
+    sys.stdin.reconfigure(encoding=args.encoding)
     process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.filters, args.delimiter, args.any, args.exclude, args.rows)
 
 if __name__ == '__main__':

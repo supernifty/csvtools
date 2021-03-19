@@ -78,6 +78,7 @@ def main():
     parser.add_argument('--unique', action='store_true', help='remove duplicate columns')
     parser.add_argument('--rename', required=False, nargs='+', help='rename columns newname=oldname...')
     parser.add_argument('--delimiter', default=',', help='file delimiter')
+    parser.add_argument('--encoding', default='utf-8', help='file encoding')
     parser.add_argument('--verbose', action='store_true', help='more logging')
     parser.add_argument('--quiet', action='store_true', default=False, help='less logging')
 
@@ -89,6 +90,7 @@ def main():
     else:
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
+    sys.stdin.reconfigure(encoding=args.encoding)
     process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.exclude, args.exclude_ends_with, args.delimiter, args.unique, args.rename)
 
 if __name__ == '__main__':

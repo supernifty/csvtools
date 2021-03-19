@@ -106,6 +106,7 @@ if __name__ == '__main__':
   parser.add_argument('--categorical', action='store_true', help='data is categorical')
   parser.add_argument('--population_sd', action='store_true', help='use population sd')
   parser.add_argument('--verbose', action='store_true', help='more logging')
+  parser.add_argument('--encoding', default='utf-8', help='file encoding')
   parser.add_argument('--quiet', action='store_true', help='more logging')
   args = parser.parse_args()
   if args.verbose:
@@ -115,4 +116,5 @@ if __name__ == '__main__':
   else:
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
+  sys.stdin.reconfigure(encoding=args.encoding)
   main(args.cols, args.delimiter, args.categorical, sys.stdin, sys.stdout, args.group, args.population_sd)

@@ -148,6 +148,7 @@ def main():
     parser.add_argument('--key_match_up_to', nargs='+', required=False, help='match up to string')
     parser.add_argument('--files', nargs='+', help='input files')
     parser.add_argument('--delimiter', required=False, default=',', help='input files')
+    parser.add_argument('--encoding', default='utf-8', help='file encoding')
     parser.add_argument('--verbose', action='store_true', help='more logging')
     parser.add_argument('--inner', action='store_true', help='intersect')
     parser.add_argument('--left', action='store_true', help='keys seen in first file')
@@ -158,7 +159,7 @@ def main():
     else:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-    process([csv.reader(open(fn, 'r'), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter, args.inner, args.key_length, args.horizontal, args.left, args.key_match_up_to)
+    process([csv.reader(open(fn, 'r', encoding=args.encoding), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter, args.inner, args.key_length, args.horizontal, args.left, args.key_match_up_to)
 
 if __name__ == '__main__':
     main()
