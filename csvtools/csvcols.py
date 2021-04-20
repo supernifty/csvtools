@@ -21,7 +21,7 @@ def get_fh(fh):
   except:
     return sys.stdin
 
-def process(fh, cols, exclude, exclude_ends_with, delimiter, unique, rename_in):
+def process(fh, cols, exclude, exclude_ends_with, delimiter, unique, rename_in, rename_all):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
@@ -53,7 +53,10 @@ def process(fh, cols, exclude, exclude_ends_with, delimiter, unique, rename_in):
       include = [include[x] for x in range(len(include)) if include[x] not in include[0:x]]
       logging.debug('csvcols: new header is %s', include)
 
-    out.writerow([rename.get(x, x) for x in include]) # write header
+    if rename_all is not None:
+      out.writerow(['{}{}'.format(rename_all, x) for x in include]) # write header
+    else:
+      out.writerow([rename.get(x, x) for x in include]) # write header
 
     lines = 0
     for lines, row in enumerate(fh):
@@ -77,6 +80,7 @@ def main():
     parser.add_argument('--exclude_ends_with', required=False, help='additional exclude rule')
     parser.add_argument('--unique', action='store_true', help='remove duplicate columns')
     parser.add_argument('--rename', required=False, nargs='+', help='rename columns newname=oldname...')
+    parser.add_argument('--rename_all', required=False, help='rename columns with provided prefix')
     parser.add_argument('--delimiter', default=',', help='file delimiter')
     parser.add_argument('--encoding', default='utf-8', help='file encoding')
     parser.add_argument('--verbose', action='store_true', help='more logging')
@@ -91,7 +95,7 @@ def main():
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
     sys.stdin.reconfigure(encoding=args.encoding)
-    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.exclude, args.exclude_ends_with, args.delimiter, args.unique, args.rename)
+    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.exclude, args.exclude_ends_with, args.delimiter, args.unique, args.rename, args.rename_all)
 
 if __name__ == '__main__':
     main()
