@@ -57,9 +57,12 @@ if __name__ == '__main__':
   parser.add_argument('--delimiter', required=False, default=',', help='input files')
   parser.add_argument('--duplicates', required=False, help='write duplicates to file')
   parser.add_argument('--verbose', action='store_true', help='more logging')
+  parser.add_argument('--quiet', action='store_true', help='more logging')
   args = parser.parse_args()
   if args.verbose:
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
+  elif args.quiet:
+    logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.WARN)
   else:
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
