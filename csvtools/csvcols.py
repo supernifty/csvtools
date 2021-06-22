@@ -94,7 +94,8 @@ def main():
     else:
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-    sys.stdin.reconfigure(encoding=args.encoding)
+    if "reconfigure" in dir(sys.stdin):
+      sys.stdin.reconfigure(encoding=args.encoding)
     process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.exclude, args.exclude_ends_with, args.delimiter, args.unique, args.rename, args.rename_all)
 
 if __name__ == '__main__':

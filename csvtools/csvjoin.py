@@ -13,7 +13,7 @@ import logging
 import re
 import sys
 
-def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match_up_to):
+def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match_up_to, filenames):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
@@ -39,7 +39,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match
       headers.append(header)
       for keyname in key.split(','):
         if keyname not in colmap:
-          logging.warn('key %s not found in file %i', keyname, file_num)
+          logging.warn('key %s not found in file %i: %s', keyname, file_num, filenames[file_num])
 
     logging.debug(sorted(out_headers))
 
@@ -159,7 +159,7 @@ def main():
     else:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-    process([csv.reader(open(fn, 'r', encoding=args.encoding), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter, args.inner, args.key_length, args.horizontal, args.left, args.key_match_up_to)
+    process([csv.reader(open(fn, 'r', encoding=args.encoding), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter, args.inner, args.key_length, args.horizontal, args.left, args.key_match_up_to, args.files)
 
 if __name__ == '__main__':
     main()
