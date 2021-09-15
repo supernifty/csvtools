@@ -116,5 +116,6 @@ if __name__ == '__main__':
   else:
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-  sys.stdin.reconfigure(encoding=args.encoding)
+  if "reconfigure" in dir(sys.stdin):
+    sys.stdin.reconfigure(encoding=args.encoding)
   main(args.cols, args.delimiter, args.categorical, sys.stdin, sys.stdout, args.group, args.population_sd)

@@ -82,7 +82,7 @@ def main():
     parser.add_argument('--rename', required=False, nargs='+', help='rename columns newname=oldname...')
     parser.add_argument('--rename_all', required=False, help='rename columns with provided prefix')
     parser.add_argument('--delimiter', default=',', help='file delimiter')
-    parser.add_argument('--encoding', default='utf-8', help='file encoding')
+    parser.add_argument('--encoding', help='file encoding')
     parser.add_argument('--verbose', action='store_true', help='more logging')
     parser.add_argument('--quiet', action='store_true', default=False, help='less logging')
 
@@ -94,7 +94,7 @@ def main():
     else:
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-    if "reconfigure" in dir(sys.stdin):
+    if args.encoding is not None and "reconfigure" in dir(sys.stdin):
       sys.stdin.reconfigure(encoding=args.encoding)
     process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.exclude, args.exclude_ends_with, args.delimiter, args.unique, args.rename, args.rename_all)
 
