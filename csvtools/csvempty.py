@@ -30,9 +30,9 @@ def main(delimiter, fh, out):
       logging.debug('row %i: %i missing values', idx, this_row)
 
   # summarise
-  out.write('Column\tEmpty\tPct\n')
+  out.write('Column\tEmpty\tNon-Empty\tPct\n')
   for r in sorted(summary):
-    out.write('{}\t{}\t{:.3f}\n'.format(r, summary[r], summary[r] / total * 100))
+    out.write('{}\t{}\t{}\t{:.3f}\n'.format(r, summary[r], total - summary[r], summary[r] / total * 100))
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Basic stats of specified columns')

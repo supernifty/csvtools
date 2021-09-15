@@ -34,8 +34,8 @@ def main(colnames, delimiter, fh, out, duplicates, count_col):
       duplicates_fh.write('{}\n'.format(delimiter.join([row[col] for col in reader.fieldnames])))
     output[key] = row # keep last matching
     counts[key] += 1
-    if count < 10:
-      logging.debug(row)
+    if count < 10 or count % 100000 == 0:
+      logging.debug('%i: %s', count, row)
     count += 1
 
   logging.info('read %i. writing...', count)
