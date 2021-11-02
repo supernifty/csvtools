@@ -16,7 +16,7 @@ def check(summary, col):
     summary[col] = {'n': 0, 'sum': 0, 'max': sys.float_info.min, 'min': sys.float_info.max, 'd': []}
   return summary
 
-def main(delimiter, x, y, z, fh, out):
+def main(delimiter, x, y, z, z_format, fh, out):
   logging.info('reading...')
   cell = {}
   xs = set()
@@ -24,7 +24,10 @@ def main(delimiter, x, y, z, fh, out):
   for row in csv.DictReader(fh, delimiter=delimiter):
     xs.add(row[x])
     ys.add(row[y])
-    cell[(row[x], row[y])] = row[z]
+    if z_format:
+      cell[(row[x], row[y])] = z.format(**row)
+    else:
+      cell[(row[x], row[y])] = row[z]
 
   fo = csv.DictWriter(out, delimiter=delimiter, fieldnames=[x] + sorted(list(xs)))
   fo.writeheader()
@@ -40,6 +43,7 @@ if __name__ == '__main__':
   parser.add_argument('--x', required=True, help='x column')
   parser.add_argument('--y', required=True, help='y column')
   parser.add_argument('--z', required=True, help='z column')
+  parser.add_argument('--z_format', action='store_true', help='z column is a format string')
   parser.add_argument('--verbose', action='store_true', help='more logging')
   parser.add_argument('--encoding', default='utf-8', help='file encoding')
   parser.add_argument('--quiet', action='store_true', help='more logging')
@@ -53,4 +57,4 @@ if __name__ == '__main__':
 
   if "reconfigure" in dir(sys.stdin):
     sys.stdin.reconfigure(encoding=args.encoding)
-  main(args.delimiter, args.x, args.y, args.z, sys.stdin, sys.stdout)
+  main(args.delimiter, args.x, args.y, args.z, args.z_format, sys.stdin, sys.stdout)

@@ -13,11 +13,15 @@ import logging
 import re
 import sys
 
+KEY_MATCH_UP_TO_TOKEN='|'
+
 def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match_up_to, filenames):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
     '''
+    global KEY_MATCH_UP_TO_TOKEN
+
     logging.info('reading %i files...', len(fhs))
     headers_map = []
     headers = []
@@ -61,9 +65,10 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match
 
       if key_match_up_to is not None:
         if '|' in key_match_up_to:
-          logging.warn('| in key_match_up_to likely to cause trouble')
-        val = tuple([re.split('|'.join(key_match_up_to), v)[0] for v in val])
-        #val = tuple([v.split(key_match_up_to)[0] for v in val])
+          logging.debug('val is %s', val)
+          val = tuple([v.split(key_match_up_to[0])[0] for v in val])
+        else: # supports multiple
+          val = tuple([re.split(KEY_MATCH_UP_TO_TOKEN.join(key_match_up_to), v)[0] for v in val])
 
       if val not in key_order:
         key_order.append(val)
@@ -90,9 +95,9 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match
 
         if key_match_up_to is not None:
           if '|' in key_match_up_to:
-            logging.warn('| in key_match_up_to likely to cause trouble')
-          val_of_interest = tuple([re.split('|'.join(key_match_up_to), v)[0] for v in val_of_interest])
-          #val_of_interest = tuple([v.split(key_match_up_to)[0] for v in val_of_interest])
+            val_of_interest = tuple([v.split(key_match_up_to[0])[0] for v in val_of_interest])
+          else:
+            val_of_interest = tuple([re.split(KEY_MATCH_UP_TO_TOKEN.join(key_match_up_to), v)[0] for v in val_of_interest])
 
         logging.debug('val of interest is "%s"', val_of_interest)
 

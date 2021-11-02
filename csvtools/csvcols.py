@@ -21,13 +21,15 @@ def get_fh(fh):
   except:
     return sys.stdin
 
-def process(fh, cols, exclude, exclude_ends_with, delimiter, unique, rename_in, rename_all):
+def process(fh, cols, exclude, exclude_ends_with, delimiter, unique, rename_in, rename_all, delimiter_out):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
     '''
     logging.info('csvcols: reading from stdin...')
-    out = csv.writer(sys.stdout, delimiter=delimiter)
+    if delimiter_out is None:
+      delimiter_out = delimiter
+    out = csv.writer(sys.stdout, delimiter=delimiter_out)
 
     rename = {}
     if rename_in is not None:
@@ -82,6 +84,7 @@ def main():
     parser.add_argument('--rename', required=False, nargs='+', help='rename columns newname=oldname...')
     parser.add_argument('--rename_all', required=False, help='rename columns with provided prefix')
     parser.add_argument('--delimiter', default=',', help='file delimiter')
+    parser.add_argument('--delimiter_out', required=False, help='file delimiter')
     parser.add_argument('--encoding', help='file encoding')
     parser.add_argument('--verbose', action='store_true', help='more logging')
     parser.add_argument('--quiet', action='store_true', default=False, help='less logging')
@@ -96,7 +99,7 @@ def main():
 
     if args.encoding is not None and "reconfigure" in dir(sys.stdin):
       sys.stdin.reconfigure(encoding=args.encoding)
-    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.exclude, args.exclude_ends_with, args.delimiter, args.unique, args.rename, args.rename_all)
+    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.exclude, args.exclude_ends_with, args.delimiter, args.unique, args.rename, args.rename_all, args.delimiter_out)
 
 if __name__ == '__main__':
     main()
