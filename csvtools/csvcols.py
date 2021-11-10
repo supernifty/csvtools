@@ -62,6 +62,7 @@ def process(fh, cols, exclude, exclude_ends_with, delimiter, unique, rename_in, 
 
     lines = 0
     for lines, row in enumerate(fh):
+      logging.debug('row %i is %s', lines, row)
       outrow = []
       for col in include:
         if col in row:
