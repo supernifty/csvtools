@@ -11,7 +11,7 @@ import logging
 import operator
 import sys
 
-def process(fh, delimiter, out, mode):
+def process(fh, delimiter, out, mode, maxlen=1e6):
     '''
       apply operation and write to dest
     '''
@@ -30,7 +30,9 @@ def process(fh, delimiter, out, mode):
       idx = 0
       for idx, row in enumerate(fh):
         for key in row.keys():
-          widths[key] = max(widths[key], len(row[key]))
+          widths[key] = min(maxlen, max(widths[key], len(row[key])))
+          if len(row[key]) > widths[key]:
+            row[key] = row[key][:widths[key]]
         rows.append(row)
       # now print
       logging.info('writing %i rows...', idx + 1)
@@ -50,6 +52,7 @@ def main():
     parser = argparse.ArgumentParser(description='Filter CSV based on values')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     parser.add_argument('--mode', default='vertical', help='display mode (vertical, horizontal)')
+    parser.add_argument('--maxlen', required=False, type=int, default=1e6, help='max len of any column')
     parser.add_argument('--quiet', action='store_true', default=False, help='less logging')
     parser.add_argument('--verbose', action='store_true', default=False, help='more logging')
     args = parser.parse_args()
@@ -60,7 +63,7 @@ def main():
     else:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.delimiter, sys.stdout, args.mode)
+    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.delimiter, sys.stdout, args.mode, args.maxlen)
 
 if __name__ == '__main__':
     main()
