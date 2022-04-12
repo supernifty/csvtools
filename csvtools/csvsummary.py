@@ -16,7 +16,7 @@ def check(summary, col):
     summary[col] = {'n': 0, 'sum': 0, 'max': sys.float_info.min, 'min': sys.float_info.max, 'd': []}
   return summary
 
-def main(colnames, delimiter, categorical, fh, out, groupcol, population_sd, percentiles):
+def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, percentiles, just_write):
   logging.info('starting...')
 
   reader = csv.DictReader(fh, delimiter=delimiter)
@@ -24,10 +24,10 @@ def main(colnames, delimiter, categorical, fh, out, groupcol, population_sd, per
   groups = set()
   if categorical:
     for row in reader: # each row
-      if groupcol is None:
+      if groupcols is None:
         group_name = 'All'
       else:
-        group_name = row[groupcol]
+        group_name = tuple([row[groupcol] for groupcol in groupcols])
       groups.add(group_name)
       for col in colnames: # each column of interest
         if col not in summary[group_name]:
@@ -54,10 +54,10 @@ def main(colnames, delimiter, categorical, fh, out, groupcol, population_sd, per
   else:
     summary = collections.defaultdict(dict)
     for row in reader:
-      if groupcol is None:
+      if groupcols is None:
         group_name = 'All'
       else:
-        group_name = row[groupcol]
+        group_name = tuple([row[groupcol] for groupcol in groupcols])
       groups.add(group_name)
       for col in colnames:
         summary[group_name] = check(summary[group_name], col)
@@ -76,7 +76,8 @@ def main(colnames, delimiter, categorical, fh, out, groupcol, population_sd, per
     # write summary
     if percentiles is None:
       percentiles = []
-    out.write('group\tname\tn\ttotal\tmin\tmax\tmean\tsd\tmedian{}\n'.format(''.join(['\tpercentile_{}'.format(x) for x in percentiles])))
+    if just_write is None:
+      out.write('group\tname\tn\ttotal\tmin\tmax\tmean\tsd\tmedian{}\n'.format(''.join(['\tpercentile_{}'.format(x) for x in percentiles])))
     for group in groups:
       for col in colnames:
         if summary[group][col]['n'] > 0:
@@ -97,7 +98,10 @@ def main(colnames, delimiter, categorical, fh, out, groupcol, population_sd, per
           else:
             summary[group][col]['sd'] = 0
           percentile_results = numpy.percentile(summary[group][col]['d'], percentiles)
-          out.write('{}\t{}\t{}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}{}\n'.format(group, col, summary[group][col]['n'], summary[group][col]['sum'], summary[group][col]['min'], summary[group][col]['max'], summary[group][col]['mean'], summary[group][col]['sd'], summary[group][col]['median'], ''.join(['\t{:.3f}'.format(x) for x in percentile_results])))
+          if just_write is None:
+            out.write('{}\t{}\t{}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}{}\n'.format(group, col, summary[group][col]['n'], summary[group][col]['sum'], summary[group][col]['min'], summary[group][col]['max'], summary[group][col]['mean'], summary[group][col]['sd'], summary[group][col]['median'], ''.join(['\t{:.3f}'.format(x) for x in percentile_results])))
+          else:
+            out.write('{}\n'.format(summary[group][col][just_write]))
         else:
           out.write('{}\t{}\t0\t0\t-\t-\t-\t-\t-\n'.format(group_name, col))
 
@@ -105,12 +109,13 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Basic stats of specified columns')
   parser.add_argument('--cols', '--columns', required=True, nargs='+', help='columns to summarise')
   parser.add_argument('--delimiter', required=False, default=',', help='input files')
-  parser.add_argument('--group', required=False, help='column to group on')
+  parser.add_argument('--group', required=False, nargs='+', help='column to group on')
   parser.add_argument('--categorical', action='store_true', help='data is categorical')
   parser.add_argument('--population_sd', action='store_true', help='use population sd')
   parser.add_argument('--percentiles', required=False, nargs='+', type=float, help='percentiles to calculate')
   parser.add_argument('--verbose', action='store_true', help='more logging')
   parser.add_argument('--encoding', default='utf-8', help='file encoding')
+  parser.add_argument('--just_write', required=False, help='only write this field value')
   parser.add_argument('--quiet', action='store_true', help='more logging')
   args = parser.parse_args()
   if args.verbose:
@@ -122,4 +127,4 @@ if __name__ == '__main__':
 
   if "reconfigure" in dir(sys.stdin):
     sys.stdin.reconfigure(encoding=args.encoding)
-  main(args.cols, args.delimiter, args.categorical, sys.stdin, sys.stdout, args.group, args.population_sd, args.percentiles)
+  main(args.cols, args.delimiter, args.categorical, sys.stdin, sys.stdout, args.group, args.population_sd, args.percentiles, args.just_write)

@@ -55,7 +55,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match
     key_order = []
     for lines, row in enumerate(fhs[0]):
       if lines % 1000 == 0:
-        logging.info('processed %i lines...', lines)
+        logging.debug('processed %i lines...', lines)
       key_pos = [headers_map[0][key] for key in keys[0].split(',')] # where are our key(s)
       logging.debug('key_pos is %s and there are %i columns', key_pos, len(row))
       if key_length is None:

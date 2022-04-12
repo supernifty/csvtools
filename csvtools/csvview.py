@@ -53,6 +53,7 @@ def main():
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     parser.add_argument('--mode', default='vertical', help='display mode (vertical, horizontal)')
     parser.add_argument('--maxlen', required=False, type=int, default=1e6, help='max len of any column')
+    parser.add_argument('--encoding', required=False, help='input encoding')
     parser.add_argument('--quiet', action='store_true', default=False, help='less logging')
     parser.add_argument('--verbose', action='store_true', default=False, help='more logging')
     args = parser.parse_args()
@@ -62,6 +63,9 @@ def main():
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.WARNING)
     else:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
+
+    if args.encoding is not None and "reconfigure" in dir(sys.stdin):
+      sys.stdin.reconfigure(encoding=args.encoding)
 
     process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.delimiter, sys.stdout, args.mode, args.maxlen)
 
