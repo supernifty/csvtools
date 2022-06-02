@@ -236,6 +236,9 @@ def main():
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
     if "reconfigure" in dir(sys.stdin):
       sys.stdin.reconfigure(encoding=args.encoding)
+      logging.debug('encoding %s applied', args.encoding)
+    else:
+      logging.debug('using default encoding')
     process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.filters, args.delimiter, args.any, args.exclude, args.rows)
 
 if __name__ == '__main__':

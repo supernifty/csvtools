@@ -8,7 +8,10 @@ import collections
 import csv
 import gzip
 import logging
+import signal
 import sys
+
+signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 def get_fh(fh):
   try:

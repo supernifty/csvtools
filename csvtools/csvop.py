@@ -42,7 +42,7 @@ def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', 
         elif op == 'maxcol': # column name of max
           candidates = {col: float(row[col]) for col in cols}
           newval = max(candidates, key=candidates.get)
-        elif op == 'rank':
+        elif op == 'rank': # rank across cols
            subset = {col: float(row[col]) for col in cols}
            s = sorted(subset, key=subset.get)[::-1]
            if len(dests) > 1:

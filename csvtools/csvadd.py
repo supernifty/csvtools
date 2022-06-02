@@ -45,6 +45,8 @@ def main(name, value, delimiter, rules):
       row[name] = value
       logging.debug('added %s to %s', value, name)
     out.writerow(row)
+    if (idx + 1) % 1000 == 0:
+      logging.debug('%i lines processed', idx + 1)
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Add column to tsv')
