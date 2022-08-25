@@ -54,6 +54,7 @@ if __name__ == '__main__':
   parser.add_argument('--value', required=False, default='', help='default col value')
   parser.add_argument('--rule', required=False, nargs='*', default=[], help='rule for value of the form col[<=>%%]val:colval')
   parser.add_argument('--delimiter', required=False, default=',', help='delimiter')
+  parser.add_argument('--encoding', default='utf-8', help='file encoding')
   parser.add_argument('--verbose', action='store_true', help='more logging')
   args = parser.parse_args()
   if args.verbose:
@@ -61,4 +62,10 @@ if __name__ == '__main__':
   else:
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
+  if "reconfigure" in dir(sys.stdin):
+    sys.stdin.reconfigure(encoding=args.encoding)
+    logging.debug('encoding %s applied', args.encoding)
+  else:
+    logging.debug('using default encoding')
+ 
   main(args.name, args.value, args.delimiter, args.rule)
