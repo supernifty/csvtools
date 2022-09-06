@@ -29,7 +29,7 @@ def main(cols, targetname, targetvalue, delimiter):
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Add column to tsv')
-  parser.add_argument('--cols', required=True, nargs='+', help='cols to remove')
+  parser.add_argument('--cols', required=False, nargs='*', default=[], help='cols to remove')
   parser.add_argument('--targetname', required=True, help='new col name with value')
   parser.add_argument('--targetvalue', required=True, help='new col name with value')
   parser.add_argument('--delimiter', required=False, default=',', help='delimiter')

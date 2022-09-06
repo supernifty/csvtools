@@ -33,7 +33,7 @@ def safe_float(v, default):
   except:
     return default
 
-def process(reader, cols, numeric, descending, delimiter):
+def process(reader, cols, numeric, descending, order, delimiter):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
@@ -50,7 +50,10 @@ def process(reader, cols, numeric, descending, delimiter):
     if numeric:
       sorted_lines = sorted(lines, key=lambda k: [safe_float(k[col], -1e100) for col in cols])
     else:
-      sorted_lines = sorted(lines, key=lambda k: [k[col] for col in cols])
+      if order is None:
+        sorted_lines = sorted(lines, key=lambda k: [k[col] for col in cols]) # each col of interest
+      else:
+        sorted_lines = sorted(lines, key=lambda k: [order.index(k[col]) if k[col] in order else len(order) for col in cols])
 
     if descending:
       sorted_lines = sorted_lines[::-1]
@@ -68,6 +71,7 @@ def main():
     parser.add_argument('--cols', required=True, nargs='+', help='column to sort on')
     parser.add_argument('--delimiter', default=',', help='file delimiter')
     parser.add_argument('--numeric', action='store_true', help='numeric sort')
+    parser.add_argument('--order', nargs='+', required=False, help='sort categories in this order')
     parser.add_argument('--desc', action='store_true', help='descending')
     parser.add_argument('--verbose', action='store_true', help='more logging')
     args = parser.parse_args()
@@ -76,7 +80,7 @@ def main():
     else:
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.numeric, args.desc, args.delimiter)
+    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.numeric, args.desc, args.order, args.delimiter)
 
 if __name__ == '__main__':
     main()

@@ -12,7 +12,7 @@ import math
 import operator
 import sys
 
-def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', format_dest=None):
+def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', format_dest=None, extra=None):
     '''
       apply operation and write to dest
     '''
@@ -28,6 +28,8 @@ def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', 
           newval = float(row[cols[0]]) - sum(float(row[col]) for col in cols[1:])
         elif op == 'product':
           newval = functools.reduce(operator.mul, [float(row[col]) for col in cols])
+          if extra is not None:
+            newval = newval * float(extra)
         elif op == 'log':
           newval = math.log(functools.reduce(operator.mul, [float(row[col]) for col in cols]))
         elif op == 'divide':
@@ -51,7 +53,6 @@ def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', 
              newval = '{} {}'.format(s[0], row[s[0]])
            else: # push into one column
              newval = ' '.join(['{}({})'.format(x, row[x]) for x in s])
-
         elif op == 'concat':
           newval = join_string.join([row[col] for col in cols])
         elif op == 'inc':
@@ -90,6 +91,7 @@ def main():
     parser.add_argument('--join_string', required=False, default=' ', help='how to join concat')
     parser.add_argument('--format', required=False, help='how to format output (applies to rank, format, truncate, suffix)')
     parser.add_argument('--dests', required=True, nargs='+', help='column name(s) to add')
+    parser.add_argument('--extra', required=False, help='additional parameters. for product: constant multiplier')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     parser.add_argument('--default_newval', default='-1', required=False, help='if dest cannot be populated')
     parser.add_argument('--verbose', action='store_true', help='more logging')
@@ -98,7 +100,7 @@ def main():
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     else:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
-    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.op, args.dests, args.delimiter, default_newval=args.default_newval, join_string=args.join_string, format_dest=args.format)
+    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.op, args.dests, args.delimiter, default_newval=args.default_newval, join_string=args.join_string, format_dest=args.format, extra=args.extra)
 
 if __name__ == '__main__':
     main()
