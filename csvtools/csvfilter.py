@@ -74,6 +74,7 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None):
         ok = True
         done = False # for any_filter
         # check lines
+        logging.debug('processing %i: %s', lines, row)
         
         if rows is not None:
           row_ok = False
