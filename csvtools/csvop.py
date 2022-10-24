@@ -65,6 +65,12 @@ def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', 
           newval = abs(float(row[cols[0]]))
         elif op == 'format':
           newval = '{}'.format(format_dest).format(**row)
+        elif op == 'segment':
+          segment_size = int(format_dest)
+          # 19 -> 1.9 -> 1 -> 10
+          lower = math.trunc(float(row[cols[0]]) / segment_size) * segment_size
+          # 10-19
+          newval = '{}-{}'.format(lower, lower + segment_size-1)
         else:
           logging.fatal('Unrecognised operation %s', op)
       except:
@@ -72,7 +78,7 @@ def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', 
         #raise
         newval = default_newval
 
-      if op not in ('format', 'truncate', 'suffix', 'rank') and format_dest is not None:
+      if op not in ('format', 'truncate', 'suffix', 'rank', 'segment') and format_dest is not None:
         newval = format_dest.format(newval)
 
       logging.debug('writing %s to %s', newval, dests[0])
@@ -87,9 +93,9 @@ def main():
     '''
     parser = argparse.ArgumentParser(description='Filter CSV based on values')
     parser.add_argument('--cols', nargs='*', required=False, help='column name')
-    parser.add_argument('--op', required=True, help='operation sum, diff, product, divide, min, max, maxcol, concat, inc, log, rank, format, truncate, suffix, abs')
+    parser.add_argument('--op', required=True, help='operation sum, diff, product, divide, min, max, maxcol, concat, inc, log, rank, format, truncate, suffix, abs, segment')
     parser.add_argument('--join_string', required=False, default=' ', help='how to join concat')
-    parser.add_argument('--format', required=False, help='how to format output (applies to rank, format, truncate, suffix)')
+    parser.add_argument('--format', required=False, help='how to format output (applies to rank, format, truncate, suffix, segment)')
     parser.add_argument('--dests', required=True, nargs='+', help='column name(s) to add')
     parser.add_argument('--extra', required=False, help='additional parameters. for product: constant multiplier')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
