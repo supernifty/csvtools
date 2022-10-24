@@ -9,12 +9,14 @@ import csv
 import logging
 import sys
 
-def is_numeric(value, line, colname):
+def is_numeric(value, line, colname, complain=True):
   try:
     _ = float(value)
     return True
   except ValueError:
-    logging.debug('line %i: %s is not numeric: %s', line, colname, value)
+    if complain:
+      logging.debug('line %i: %s is not numeric: %s', line, colname, value)
+
     return False
 
 def rule_succeeded(out, row, exclude):
@@ -61,10 +63,16 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None):
         ne[colname].add(value)
       elif '<' in rule:
         colname, value = rule.split('<')
-        lt[colname] = float(value)
+        try:
+          lt[colname] = float(value) # lt contains colname of interest and required value
+        except ValueError:
+          lt[colname] = value # now it's another column name
       elif '>' in rule:
         colname, value = rule.split('>')
-        gt[colname] = float(value)
+        try:
+          gt[colname] = float(value)
+        except ValueError:
+          gt[colname] = value # now it's another column name
 
     logging.info('affected columns: %s %s %s %s %s %s', ' '.join(eq.keys()), ' '.join(lt.keys()), ' '.join(gt.keys()), ' '.join(ne.keys()), ' '.join(contains.keys()), ' '.join(starts.keys()))
     
@@ -126,8 +134,8 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None):
 
           if any_filter or ok:
             # check lt
-            for rule in lt:
-              if not is_numeric(row[rule], lines, rule) or float(row[rule]) >= lt[rule]: # lt fail
+            for rule in lt: # rule is colname
+              if not is_numeric(row[rule], lines, rule) or (is_numeric(lt[rule], lines, rule) and float(row[rule]) >= lt[rule]) or (not is_numeric(gt[rule], lines, rule) and float(row[rule]) >= float(row[lt[rule]])): # lt fail
                 ok = False
                 skipped[rule] += 1
                 if not any_filter:
@@ -142,9 +150,9 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None):
               continue
 
             if any_filter or ok:
-              # check lt
+              # check gt
               for rule in gt:
-                if not is_numeric(row[rule], lines, rule) or float(row[rule]) <= gt[rule]: # gt fail
+                if not is_numeric(row[rule], lines, rule) or (is_numeric(gt[rule], lines, rule) and float(row[rule]) <= gt[rule]) or (not is_numeric(gt[rule], lines, rule) and float(row[rule]) <= float(row[gt[rule]])): # gt fail
                   ok = False
                   skipped[rule] += 1
                   if not any_filter:
