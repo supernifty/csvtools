@@ -15,13 +15,13 @@ def get_fh(fn):
   else:
     return open(fn, 'r')
 
-def process(csvs, union, delimiter, default_value):
+def process(csvs, union, delimiter, default_value, filename):
     '''
         read in each csv file, look at the header of each
         write out only columns that are in all csv files
     '''
     logging.info('merging %i files...', len(csvs))
-    fhs = [csv.reader(get_fh(filename), delimiter=delimiter) for filename in csvs]
+    fhs = [csv.reader(get_fh(fn), delimiter=delimiter) for fn in csvs]
     headers_list = [next(fh) for fh in fhs] # column names for each csv
     headers = [set(header) for header in headers_list]
     intersection = []
@@ -35,6 +35,9 @@ def process(csvs, union, delimiter, default_value):
       output_cols = union_cols
     else:
       output_cols = intersection
+
+    if filename is not None:
+      output_cols = [filename] + output_cols
 
     logging.info('including %i fields', len(output_cols))
     # each file
@@ -53,7 +56,9 @@ def process(csvs, union, delimiter, default_value):
               break
             outline = []
             for val in output_cols: # each colname to include
-                if val in headers_list[idx]:
+                if val == filename:
+                  outline.append(csvs[idx])
+                elif val in headers_list[idx]:
                   outline.append(row[headers_list[idx].index(val)])
                 else:
                   outline.append(default_value) # no value
@@ -68,6 +73,7 @@ def main():
     parser = argparse.ArgumentParser(description='Merge CSV files')
     parser.add_argument('csvs', nargs='+', help='csv files to merge')
     parser.add_argument('--union', default=False, action='store_true', help='keep all columns')
+    parser.add_argument('--filename', required=False, help='add filename as a column with this name')
     parser.add_argument('--delimiter', required=False, default=',', help='input file delimiter')
     parser.add_argument('--default', required=False, default='', help='default value for missing values')
     parser.add_argument('--verbose', action='store_true', help='more logging')
@@ -77,7 +83,7 @@ def main():
     else:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
     args = parser.parse_args()
-    process(args.csvs, args.union, args.delimiter, args.default)
+    process(args.csvs, args.union, args.delimiter, args.default, args.filename)
 
 if __name__ == '__main__':
     main()

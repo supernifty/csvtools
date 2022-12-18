@@ -21,6 +21,8 @@ def main(delimiter, fh, out):
     total += 1
     this_row = 0
     for rn in row: # each column
+      if rn is None:
+        continue # how is this even possible?
       if row[rn] == '':
         summary[rn] += 1
         this_row += 1
@@ -30,6 +32,7 @@ def main(delimiter, fh, out):
       logging.debug('row %i: %i missing values', idx, this_row)
 
   # summarise
+  logging.debug('sorting %s', summary)
   out.write('Column\tEmpty\tNon-Empty\tPct\n')
   for r in sorted(summary):
     out.write('{}\t{}\t{}\t{:.3f}\n'.format(r, summary[r], total - summary[r], summary[r] / total * 100))
