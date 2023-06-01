@@ -37,6 +37,8 @@ def main(delimiter, fh, out, drop_empty):
   if drop_empty:
     # write without empties
     non_empty_cols = [r for r in reader.fieldnames if summary[r] < total]
+    to_drop = [r for r in reader.fieldnames if summary[r] == total]
+    logging.info('dropping: %s', ' '.join(to_drop))
     odw = csv.DictWriter(out, delimiter=delimiter, fieldnames=non_empty_cols)
     odw.writeheader()
     for r in rows:
