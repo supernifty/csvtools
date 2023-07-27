@@ -19,7 +19,7 @@ def main(name, value, delimiter, rules):
     logging.debug('processing line %i...', idx)
     for rule in rules:
       cond, newval = rule.split(':')
-      condname, condval = re.split('[<=>!%]', cond)
+      condname, condval = re.split('[<=>!%]', cond, maxsplit=1)
       op = cond[len(condname)]
       if op == '<' and float(row[condname]) < float(condval):
         row[name] = newval
