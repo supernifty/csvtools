@@ -135,12 +135,12 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None):
           if any_filter or ok:
             # check lt
             for rule in lt: # rule is colname
-              if not is_numeric(row[rule], lines, rule) or (is_numeric(lt[rule], lines, rule) and float(row[rule]) >= lt[rule]) or (not is_numeric(gt[rule], lines, rule) and float(row[rule]) >= float(row[lt[rule]])): # lt fail
+              if not is_numeric(row[rule], lines, rule) or (is_numeric(lt[rule], lines, rule) and float(row[rule]) >= lt[rule]) or (not is_numeric(lt[rule], lines, rule) and float(row[rule]) >= float(row[lt[rule]])): # lt fail
                 ok = False
                 skipped[rule] += 1
                 if not any_filter:
                   break
-              elif any_filter:
+              elif any_filter: # success
                 done = True
                 break
 

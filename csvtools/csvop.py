@@ -59,8 +59,10 @@ def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', 
           newval = idx
         elif op == 'truncate':
           newval = row[cols[0]][:int(format_dest)]
-        elif op == 'suffix':
+        elif op == 'suffix': # fixed position
           newval = row[cols[0]][int(format_dest):]
+        elif op == 'suffixmatch': # match string
+          newval = row[cols[0]].split(format_dest)[-1]
         elif op == 'abs':
           newval = abs(float(row[cols[0]]))
         elif op == 'format':
@@ -78,7 +80,7 @@ def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', 
         #raise
         newval = default_newval
 
-      if op not in ('format', 'truncate', 'suffix', 'rank', 'segment') and format_dest is not None:
+      if op not in ('format', 'truncate', 'suffix', 'suffixmatch', 'rank', 'segment') and format_dest is not None: # ops that use format_dest
         newval = format_dest.format(newval)
 
       logging.debug('writing %s to %s', newval, dests[0])
@@ -93,7 +95,7 @@ def main():
     '''
     parser = argparse.ArgumentParser(description='Filter CSV based on values')
     parser.add_argument('--cols', nargs='*', required=False, help='column name')
-    parser.add_argument('--op', required=True, help='operation sum, diff, product, divide, min, max, maxcol, concat, inc, log, rank, format, truncate, suffix, abs, segment')
+    parser.add_argument('--op', required=True, help='operation sum, diff, product, divide, min, max, maxcol, concat, inc, log, rank, format, truncate, suffix, suffixmatch, abs, segment')
     parser.add_argument('--join_string', required=False, default=' ', help='how to join concat')
     parser.add_argument('--format', required=False, help='how to format output (applies to rank, format, truncate, suffix, segment)')
     parser.add_argument('--dests', required=True, nargs='+', help='column name(s) to add')
