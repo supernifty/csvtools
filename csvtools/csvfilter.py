@@ -47,28 +47,28 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None):
     starts = collections.defaultdict(set)
     for rule in filters:
       if '=' in rule:
-        colname, value = rule.split('=')
+        colname, value = rule.split('=', maxsplit=1)
         eq[colname].add(value)
       elif '%' in rule:
-        colname, value = rule.split('%')
+        colname, value = rule.split('%', maxsplit=1)
         contains[colname].add(value)
       elif '~' in rule:
-        colname, value = rule.split('~')
+        colname, value = rule.split('~', maxsplit=1)
         not_contains[colname].add(value)
       elif '^' in rule:
-        colname, value = rule.split('^')
+        colname, value = rule.split('^', maxsplit=1)
         starts[colname].add(value)
       elif '!' in rule:
-        colname, value = rule.split('!')
+        colname, value = rule.split('!', maxsplit=1)
         ne[colname].add(value)
       elif '<' in rule:
-        colname, value = rule.split('<')
+        colname, value = rule.split('<', maxsplit=1)
         try:
           lt[colname] = float(value) # lt contains colname of interest and required value
         except ValueError:
           lt[colname] = value # now it's another column name
       elif '>' in rule:
-        colname, value = rule.split('>')
+        colname, value = rule.split('>', maxsplit=1)
         try:
           gt[colname] = float(value)
         except ValueError:

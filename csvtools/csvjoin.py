@@ -15,7 +15,7 @@ import sys
 
 KEY_MATCH_UP_TO_TOKEN='|'
 
-def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match_up_to, filenames):
+def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match_up_to, key_match_noregex, filenames):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
@@ -64,7 +64,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match
         val = (row[key_pos[0]][:key_length],) # with key_pos we only support one key
 
       if key_match_up_to is not None:
-        if '|' in key_match_up_to:
+        if '|' in key_match_up_to or key_match_noregex: # because multiple keys are joined internally with |
           logging.debug('val is %s', val)
           val = tuple([v.split(key_match_up_to[0])[0] for v in val])
         else: # supports multiple
@@ -94,7 +94,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match
           val_of_interest = (row[key_pos[0]][:key_length],)
 
         if key_match_up_to is not None:
-          if '|' in key_match_up_to:
+          if '|' in key_match_up_to or key_match_noregex:
             val_of_interest = tuple([v.split(key_match_up_to[0])[0] for v in val_of_interest])
           else:
             val_of_interest = tuple([re.split(KEY_MATCH_UP_TO_TOKEN.join(key_match_up_to), v)[0] for v in val_of_interest])
@@ -151,6 +151,7 @@ def main():
     parser.add_argument('--keys', nargs='+', help='column names (comma separated for multiple keys)')
     parser.add_argument('--key_length', type=int, required=False, help='only match first part of keys')
     parser.add_argument('--key_match_up_to', nargs='+', required=False, help='match up to string')
+    parser.add_argument('--key_match_noregex', action='store_true', help='do not use regex for keymatch')
     parser.add_argument('--files', nargs='+', help='input files')
     parser.add_argument('--delimiter', required=False, default=',', help='input files')
     parser.add_argument('--encoding', default='utf-8', help='file encoding')
@@ -164,7 +165,7 @@ def main():
     else:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-    process([csv.reader(open(fn, 'r', encoding=args.encoding), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter, args.inner, args.key_length, args.horizontal, args.left, args.key_match_up_to, args.files)
+    process([csv.reader(open(fn, 'r', encoding=args.encoding), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter, args.inner, args.key_length, args.horizontal, args.left, args.key_match_up_to, args.key_match_noregex, args.files)
 
 if __name__ == '__main__':
     main()
