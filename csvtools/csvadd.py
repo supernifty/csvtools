@@ -21,11 +21,11 @@ def main(name, value, delimiter, rules):
       cond, newval = rule.split(':')
       condname, condval = re.split('[<=>!%]', cond, maxsplit=1)
       op = cond[len(condname)]
-      if op == '<' and float(row[condname]) < float(condval):
+      if op == '<' and row[condname] != '' and float(row[condname]) < float(condval):
         row[name] = newval
         logging.debug('added %s to %s with <', newval, name)
         break
-      elif op == '>' and float(row[condname]) > float(condval):
+      elif op == '>' and row[condname] != '' and float(row[condname]) > float(condval):
         row[name] = newval
         logging.debug('added %s to %s with >', newval, name)
         break
