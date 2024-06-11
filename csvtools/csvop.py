@@ -30,6 +30,8 @@ def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', 
           newval = functools.reduce(operator.mul, [float(row[col]) for col in cols])
           if extra is not None:
             newval = newval * float(extra)
+        elif op == 'multiply':
+          newval = functools.reduce(operator.mul, [float(row[col]) for col in cols]) * float(format_dest)
         elif op == 'log':
           newval = math.log(functools.reduce(operator.mul, [float(row[col]) for col in cols]))
         elif op == 'divide':
@@ -80,7 +82,7 @@ def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', 
         #raise
         newval = default_newval
 
-      if op not in ('format', 'truncate', 'suffix', 'suffixmatch', 'rank', 'segment') and format_dest is not None: # ops that use format_dest
+      if op not in ('format', 'truncate', 'suffix', 'suffixmatch', 'rank', 'segment', 'multiply') and format_dest is not None: # ops that use format_dest
         newval = format_dest.format(newval)
 
       logging.debug('writing %s to %s', newval, dests[0])

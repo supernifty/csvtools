@@ -17,7 +17,7 @@ def check(summary, col):
     summary[col] = {'n': 0, 'sum': 0, 'max': sys.float_info.min, 'min': sys.float_info.max, 'd': []}
   return summary
 
-def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, percentiles, just_write, output_format, pvalue):
+def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, percentiles, just_write, output_format, pvalue, add_count_to_group):
   logging.info('starting...')
 
   reader = csv.DictReader(fh, delimiter=delimiter)
@@ -73,7 +73,10 @@ def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, pe
           logging.debug('pvalue for %s is %f from observed %s expected %s dof %i ddof %i', col, pvalues[col], observed, expected, dof, ddof)
 
       for group in sorted(groups): # each unique group
-        row = {'Group': group}
+        if add_count_to_group:
+          row = {'Group': '{} (n={})'.format(group, summary[group][col]['n'])}
+        else:
+          row = {'Group': group}
         for col in colnames: # each column
           total = sum([summary[group][col][x] for x in summary[group][col]])
           for key in summary[group][col].keys():
@@ -98,7 +101,11 @@ def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, pe
           logging.debug('%i distinct values', len(summary[group][col].keys()))
           total = sum([summary[group][col][x] for x in summary[group][col]])
           for key in sorted(summary[group][col].keys()):
-            out.write('{}\t{}\t{}\t{:.6f}\n'.format(','.join(group), key, summary[group][col][key], summary[group][col][key] / total))
+            if add_count_to_group:
+              group_name = '{} (n={})'.format(','.join(group), total)
+            else:
+              group_name = ','.join(group)
+            out.write('{}\t{}\t{}\t{:.6f}\n'.format(group_name, key, summary[group][col][key], summary[group][col][key] / total))
           if len(colnames) > 1:
             out.write('=======\n')
   else: # numeric
@@ -194,6 +201,8 @@ def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, pe
               summary[group][col]['sd'] = 0
             percentile_results = numpy.percentile(summary[group][col]['d'], percentiles)
             if just_write is None:
+              if add_count_to_group:
+                group = '{} (n={})'.format(group, summary[group][col]['n'])
               out.write('{}\t{}\t{}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}{}\n'.format(group, col, summary[group][col]['n'], summary[group][col]['sum'], summary[group][col]['min'], summary[group][col]['max'], summary[group][col]['mean'], summary[group][col]['sd'], summary[group][col]['median'], ''.join(['\t{:.3f}'.format(x) for x in percentile_results])))
             else:
               out.write('{}\n'.format(summary[group][col][just_write]))
@@ -205,6 +214,7 @@ if __name__ == '__main__':
   parser.add_argument('--cols', '--columns', required=True, nargs='+', help='columns to summarise')
   parser.add_argument('--delimiter', required=False, default=',', help='input files')
   parser.add_argument('--group', required=False, nargs='+', help='column to group on')
+  parser.add_argument('--add_count_to_group', action='store_true',  help='format group to include count')
   parser.add_argument('--categorical', action='store_true', help='data is categorical')
   parser.add_argument('--population_sd', action='store_true', help='use population sd')
   parser.add_argument('--percentiles', required=False, nargs='+', type=float, help='percentiles to calculate')
@@ -224,4 +234,4 @@ if __name__ == '__main__':
 
   if "reconfigure" in dir(sys.stdin):
     sys.stdin.reconfigure(encoding=args.encoding)
-  main(args.cols, args.delimiter, args.categorical, sys.stdin, sys.stdout, args.group, args.population_sd, args.percentiles, args.just_write, args.output_format, args.pvalue)
+  main(args.cols, args.delimiter, args.categorical, sys.stdin, sys.stdout, args.group, args.population_sd, args.percentiles, args.just_write, args.output_format, args.pvalue, args.add_count_to_group)
