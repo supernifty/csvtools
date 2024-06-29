@@ -54,6 +54,8 @@ def process(csvs, union, delimiter, default_value, filename):
             if len(row) == 0:
               logging.warn('processing %s: empty row. continuing...', csvs[idx])
               break
+            elif len(row) < len(headers_list[idx]):
+              row += [""] * (len(headers_list[idx]) - len(row))
             outline = []
             for val in output_cols: # each colname to include
                 if val == filename:
