@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 '''
   map values in fields to new values
-  python csvmap.py --mapfile fn --source_col --map_col_from --map_col_to < old.csv > new.csv
+  python csvmapfile.py --mapfile fn --source_col --map_col_from --map_col_to < old.csv > new.csv
 '''
 
 import argparse

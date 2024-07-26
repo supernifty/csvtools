@@ -65,6 +65,8 @@ def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', 
           newval = row[cols[0]][int(format_dest):]
         elif op == 'suffixmatch': # match string
           newval = row[cols[0]].split(format_dest)[-1]
+        elif op == 'prefixmatch': # match string
+          newval = row[cols[0]].split(format_dest)[0]
         elif op == 'abs':
           newval = abs(float(row[cols[0]]))
         elif op == 'format':

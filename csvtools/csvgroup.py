@@ -22,16 +22,16 @@ def process(fh, op, delimiter, join_string=' + '):
     out_rows = {}
     for idx, row in enumerate(fh):
       ops = {}
-      for o in op:
-        name, value = o.split('=')
-        ops[name] = value
+      for o in op: # each 
+        name, value = o.split('=') # column, operation
+        ops[name] = value # ops[column] = operation
 
       key = []
       for field in fh.fieldnames:
         if field not in ops:
           key.append(row[field])
 
-      key = tuple(key)
+      key = tuple(key) # all keys not with an operation
       if key not in out_rows:
         out_rows[key] = {}
 
