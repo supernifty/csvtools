@@ -84,7 +84,7 @@ def process(fh, cols, op, dests, delimiter, default_newval=-1, join_string=' ', 
         #raise
         newval = default_newval
 
-      if op not in ('format', 'truncate', 'suffix', 'suffixmatch', 'rank', 'segment', 'multiply') and format_dest is not None: # ops that use format_dest
+      if op not in ('format', 'truncate', 'suffix', 'suffixmatch', 'prefixmatch', 'rank', 'segment', 'multiply') and format_dest is not None: # ops that use format_dest
         newval = format_dest.format(newval)
 
       logging.debug('writing %s to %s', newval, dests[0])
@@ -99,7 +99,7 @@ def main():
     '''
     parser = argparse.ArgumentParser(description='Filter CSV based on values')
     parser.add_argument('--cols', nargs='*', required=False, help='column name')
-    parser.add_argument('--op', required=True, help='operation sum, diff, product, divide, min, max, maxcol, concat, inc, log, rank, format, truncate, suffix, suffixmatch, abs, segment')
+    parser.add_argument('--op', required=True, help='operation sum, diff, product, divide, min, max, maxcol, concat, inc, log, prefixmatch, rank, format, truncate, suffix, suffixmatch, abs, segment')
     parser.add_argument('--join_string', required=False, default=' ', help='how to join concat')
     parser.add_argument('--format', required=False, help='how to format output (applies to rank, format, truncate, suffix, segment)')
     parser.add_argument('--dests', required=True, nargs='+', help='column name(s) to add')
