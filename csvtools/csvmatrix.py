@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-  summarise numerical columns
+  convert values into columns
 '''
 
 import argparse
@@ -10,11 +10,6 @@ import logging
 import sys
 
 import numpy
-
-def check(summary, col):
-  if col not in summary:
-    summary[col] = {'n': 0, 'sum': 0, 'max': sys.float_info.min, 'min': sys.float_info.max, 'd': []}
-  return summary
 
 def main(delimiter, x, y, z, z_format, fh, out):
   logging.info('reading...')
@@ -38,7 +33,7 @@ def main(delimiter, x, y, z, z_format, fh, out):
     fo.writerow(row)
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser(description='Basic stats of specified columns')
+  parser = argparse.ArgumentParser(description='convert values into columns')
   parser.add_argument('--delimiter', required=False, default=',', help='input files')
   parser.add_argument('--x', required=True, help='x column')
   parser.add_argument('--y', required=True, help='y column')
