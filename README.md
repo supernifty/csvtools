@@ -160,4 +160,50 @@ make a stratified (categorical) variable from a continuous variable
 ```
 csvstratify.py --col x --dest xcat --names Low High --separators 0 < test/missing.csv
 ```
+## csvsubsample
+writes each row with a provided probability
+
+```
+csvsubsample.py --probability 0.5 < test/5.csv
+```
+
+## csvsummary
+summarise columns. numeric are summarised with mean stdev etc, categorical with counts
+
+```
+csvsummary.py --cols pop < test/5.csv
+```
+
+## csvungroup
+removes columns and replaces each column removed with a row containing colname/value. useful for where you want two columns of the form key/value, such as supernifty/plotme/heatmap.
+
+```
+csvungroup.py --cols country state --targetname n --targetvalue v < test/5.csv
+```
+
+## csvunique
+filter our duplicate rows
+
+```
+csvunique.py --cols key < test/3.csv
+```
+
+## csvunique_simple
+filter out duplicate rows considering all columns
+
+```
+csvunique_simple.py < test/3.csv
+```
+
+## csvview
+Format rows with fixed width (vertical) or as individual lines (horizontal)
+
+```
+csvview.py --mode vertical < test/3.csv
+```
+## reorder
+Write rows in order specified on command line - note that this doesn't treat the header differently, it counts as line 0
+
+```
+reorder.py 0 3 2 1 < test/3.csv
 

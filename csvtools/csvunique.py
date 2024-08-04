@@ -51,7 +51,7 @@ def main(colnames, delimiter, fh, out, duplicates, count_col):
   logging.info('done writing %i', count)
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser(description='Assess MSI')
+  parser = argparse.ArgumentParser(description='Filter to unique rows')
   parser.add_argument('--cols', required=True, nargs='+', help='columns to use as index')
   parser.add_argument('--count_col', required=False, help='column to write count')
   parser.add_argument('--delimiter', required=False, default=',', help='input files')
