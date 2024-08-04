@@ -133,7 +133,6 @@ Apply an operation on column or columns to generate a new column.
 ```
 csvop.py --op sum --cols Shared1 Shared2 --dests Total < test/1.csv
 ```
-```
 
 ## csvpivot
 The values of a column become the column names, and the values of each row are then the values of those columns.
