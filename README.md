@@ -181,7 +181,7 @@ csvungroup.py --cols country state --targetname n --targetvalue v < test/5.csv
 ```
 
 ## csvunique
-filter our duplicate rows
+filter out duplicate rows
 
 ```
 csvunique.py --cols key < test/3.csv
