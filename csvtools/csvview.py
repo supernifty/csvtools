@@ -49,7 +49,7 @@ def main():
     '''
         parse command line arguments
     '''
-    parser = argparse.ArgumentParser(description='Filter CSV based on values')
+    parser = argparse.ArgumentParser(description='Format rows with fixed width (vertical) or as individual lines (horizontal)')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     parser.add_argument('--mode', default='vertical', help='display mode (vertical, horizontal)')
     parser.add_argument('--maxlen', required=False, type=int, default=1e6, help='max len of any column')

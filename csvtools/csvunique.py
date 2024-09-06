@@ -9,7 +9,7 @@ import csv
 import logging
 import sys
 
-def main(colnames, delimiter, fh, out, duplicates, count_col):
+def main(colnames, delimiter, fh, out, duplicates, count_col, combination):
   logging.info('starting...')
 
   reader = csv.DictReader(fh, delimiter=delimiter)
@@ -26,7 +26,10 @@ def main(colnames, delimiter, fh, out, duplicates, count_col):
   if duplicates is not None:
     duplicates_fh = open(duplicates, 'w')
   for row in reader:
-    key = '\t'.join([row[col] for col in colnames])
+    if combination:
+      key = '\t'.join(sorted([row[col] for col in colnames]))
+    else:
+      key = '\t'.join([row[col] for col in colnames])
     if key in output and duplicates is not None:
       result = [row[col] for col in reader.fieldnames]
       if None in result:
@@ -51,11 +54,12 @@ def main(colnames, delimiter, fh, out, duplicates, count_col):
   logging.info('done writing %i', count)
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser(description='Assess MSI')
+  parser = argparse.ArgumentParser(description='Filter to unique rows')
   parser.add_argument('--cols', required=True, nargs='+', help='columns to use as index')
   parser.add_argument('--count_col', required=False, help='column to write count')
   parser.add_argument('--delimiter', required=False, default=',', help='input files')
   parser.add_argument('--duplicates', required=False, help='write duplicates to file')
+  parser.add_argument('--combination', action='store_true', help='sig1 and sig2 is the same as sig2 and sig1')
   parser.add_argument('--verbose', action='store_true', help='more logging')
   parser.add_argument('--quiet', action='store_true', help='more logging')
   args = parser.parse_args()
@@ -66,4 +70,4 @@ if __name__ == '__main__':
   else:
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-  main(args.cols, args.delimiter, sys.stdin, sys.stdout, args.duplicates, args.count_col)
+  main(args.cols, args.delimiter, sys.stdin, sys.stdout, args.duplicates, args.count_col, args.combination)

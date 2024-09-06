@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-  summarise numerical columns
+  summarise columns
 '''
 
 import argparse

@@ -18,7 +18,7 @@ def main(name, value, delimiter, rules):
   for idx, row in enumerate(fh):
     logging.debug('processing line %i...', idx)
     for rule in rules:
-      cond, newval = rule.split(':')
+      cond, newval = rule.rsplit(':', maxsplit=1)
       condname, condval = re.split('[<=>!%]', cond, maxsplit=1)
       op = cond[len(condname)]
       if op == '<' and row[condname] != '' and float(row[condname]) < float(condval):
