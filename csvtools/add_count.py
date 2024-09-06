@@ -10,26 +10,37 @@ import logging
 import re
 import sys
 
-def main(dest, cols, delimiter):
+def main(dest, cols, delimiter, as_map):
   fh = csv.DictReader(sys.stdin, delimiter=delimiter)
-  out = csv.DictWriter(sys.stdout, delimiter=delimiter, fieldnames=fh.fieldnames + [dest])
+  if as_map is None:
+    out = csv.DictWriter(sys.stdout, delimiter=delimiter, fieldnames=fh.fieldnames + [dest])
+  else:
+    out = csv.DictWriter(sys.stdout, delimiter=delimiter, fieldnames=[as_map, dest])
   counts = collections.defaultdict(int)
   out.writeheader()
   for idx, row in enumerate(fh):
     logging.debug('processing line %i...', idx)
     key = '-'.join([row[c] for c in cols])
     counts[key] += 1
-    row[dest] = '{}-{}'.format(key, counts[key])
-    out.writerow(row)
+    if len(cols) > 0:
+      row[dest] = '{}-{}'.format(key, counts[key])
+    else:
+      row[dest] = counts[key]
+    if as_map is None:
+      out.writerow(row)
+    else:
+      row = {as_map: row[as_map], dest: row[dest]}
+      out.writerow(row)
     if (idx + 1) % 100000 == 0:
       logging.debug('%i lines processed', idx + 1)
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Add column to tsv')
   parser.add_argument('--dest', required=True, help='new col name')
-  parser.add_argument('--cols', required=False, nargs='*', default=[], help='rule for value of the form col[<=>%%]val:colval')
+  parser.add_argument('--cols', required=False, nargs='*', default=[], help='cols to stratify')
   parser.add_argument('--delimiter', required=False, default=',', help='delimiter')
   parser.add_argument('--encoding', default='utf-8', help='file encoding')
+  parser.add_argument('--as_map', help='write the mapping with this col as key')
   parser.add_argument('--verbose', action='store_true', help='more logging')
   args = parser.parse_args()
   if args.verbose:
@@ -43,4 +54,4 @@ if __name__ == '__main__':
   else:
     logging.debug('using default encoding')
  
-  main(args.dest, args.cols, args.delimiter)
+  main(args.dest, args.cols, args.delimiter, args.as_map)
