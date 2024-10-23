@@ -52,6 +52,12 @@ TODO Combine rows by grouping columns following a specified rule
 ```
 csvgroup.py --delimiter '       ' --op Count=max
 ```
+## csvhist.py
+Generate counts of each value in a specified column (or combination of columns)
+
+```
+csvhist.py --cols Col1 < test/join1.csv
+```
 
 ## csvjoin.py
 Joins two tables based on a key column from each
