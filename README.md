@@ -157,7 +157,15 @@ split into multiple files based on a column value
 
 ```
 csvsplit.py --col key --target out.value.csv < test/3.csv # generates out.hello.csv out.goodbye.csv
+
 ``` 
+
+## csvsplit_horizontal.py
+split into multiple files based on line number - similar to split command but keeps the header
+
+```
+csvsplit_horizontal.py --lines 2 --target out.value.csv < test/3.csv # generates out.hello.csv out.goodbye.csv
+```
 
 ## csvstratify
 make a stratified (categorical) variable from a continuous variable
