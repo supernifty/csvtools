@@ -164,7 +164,7 @@ csvsplit.py --col key --target out.value.csv < test/3.csv # generates out.hello.
 split into multiple files based on line number - similar to split command but keeps the header
 
 ```
-csvsplit_horizontal.py --lines 2 --target out.value.csv < test/3.csv # generates out.hello.csv out.goodbye.csv
+csvsplit_horizontal.py --lines 2 --target out.value.csv < test/3.csv # generates out.0.csv out.1.csv
 ```
 
 ## csvstratify
