@@ -17,7 +17,7 @@ def check(summary, col):
     summary[col] = {'n': 0, 'sum': 0, 'max': sys.float_info.min, 'min': sys.float_info.max, 'd': []}
   return summary
 
-def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, percentiles, just_write, output_format, pvalue, add_count_to_group):
+def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, percentiles, just_write, output_format, pvalue, add_count_to_group, exclude_empty):
   logging.info('starting...')
 
   reader = csv.DictReader(fh, delimiter=delimiter)
@@ -33,6 +33,8 @@ def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, pe
       for col in colnames: # each column of interest
         if col not in summary[group_name]:
           summary[group_name][col] = collections.defaultdict(int)
+        if exclude_empty and row[col] == '':
+          continue
         summary[group_name][col][row[col]] += 1
         #logging.debug('added to group %s col %s with value %s', group_name, col, row[col])
 
@@ -223,6 +225,7 @@ if __name__ == '__main__':
   parser.add_argument('--just_write', required=False, help='only write this field value')
   parser.add_argument('--output_format', required=False, help='options: tabular')
   parser.add_argument('--pvalue', action='store_true', help='calculate pvalue')
+  parser.add_argument('--exclude_empty', action='store_true', help='exclude empty values from statistics')
   parser.add_argument('--quiet', action='store_true', help='more logging')
   args = parser.parse_args()
   if args.verbose:
@@ -234,4 +237,4 @@ if __name__ == '__main__':
 
   if "reconfigure" in dir(sys.stdin):
     sys.stdin.reconfigure(encoding=args.encoding)
-  main(args.cols, args.delimiter, args.categorical, sys.stdin, sys.stdout, args.group, args.population_sd, args.percentiles, args.just_write, args.output_format, args.pvalue, args.add_count_to_group)
+  main(args.cols, args.delimiter, args.categorical, sys.stdin, sys.stdout, args.group, args.population_sd, args.percentiles, args.just_write, args.output_format, args.pvalue, args.add_count_to_group, args.exclude_empty)
