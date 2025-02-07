@@ -33,7 +33,7 @@ def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, pe
       for col in colnames: # each column of interest
         if col not in summary[group_name]:
           summary[group_name][col] = collections.defaultdict(int)
-        if exclude_empty and row[col] == '':
+        if exclude_empty is not None and row[col] in exclude_empty:
           continue
         summary[group_name][col][row[col]] += 1
         #logging.debug('added to group %s col %s with value %s', group_name, col, row[col])
@@ -186,14 +186,7 @@ def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, pe
         for col in colnames:
           if summary[group][col]['n'] > 0:
             summary[group][col]['mean'] = summary[group][col]['sum'] / summary[group][col]['n']
-    
-            if summary[group][col]['n'] % 2 == 0:
-              mid = int(summary[group][col]['n'] / 2)
-              summary[group][col]['median'] = (summary[group][col]['d'][mid] + summary[group][col]['d'][mid - 1]) / 2
-            else:
-              mid = int((summary[group][col]['n'] - 1) / 2)
-              summary[group][col]['median'] = summary[group][col]['d'][mid]
-    
+            summary[group][col]['median'] = numpy.percentile(summary[group][col]['d'], 50)
             if summary[group][col]['n'] > 1:
               if population_sd:
                 summary[group][col]['sd'] = numpy.std(summary[group][col]['d'], ddof=0)
@@ -225,7 +218,7 @@ if __name__ == '__main__':
   parser.add_argument('--just_write', required=False, help='only write this field value')
   parser.add_argument('--output_format', required=False, help='options: tabular')
   parser.add_argument('--pvalue', action='store_true', help='calculate pvalue')
-  parser.add_argument('--exclude_empty', action='store_true', help='exclude empty values from statistics')
+  parser.add_argument('--exclude_empty', nargs='*', help='exclude these values from statistics')
   parser.add_argument('--quiet', action='store_true', help='more logging')
   args = parser.parse_args()
   if args.verbose:
