@@ -9,7 +9,7 @@ import logging
 import re
 import sys
 
-def main(name, value, delimiter, rules):
+def main(name, value, delimiter, rules, skip_fails):
   logging.debug('%i rules', len(rules))
   fh = csv.DictReader(sys.stdin, delimiter=delimiter)
   out = csv.DictWriter(sys.stdout, delimiter=delimiter, fieldnames=fh.fieldnames + [name])
@@ -17,34 +17,41 @@ def main(name, value, delimiter, rules):
   out.writeheader()
   for idx, row in enumerate(fh):
     logging.debug('processing line %i...', idx)
-    for rule in rules:
-      cond, newval = rule.rsplit(':', maxsplit=1)
-      condname, condval = re.split('[<=>!%]', cond, maxsplit=1)
-      op = cond[len(condname)]
-      if op == '<' and row[condname] != '' and float(row[condname]) < float(condval):
-        row[name] = newval
-        logging.debug('added %s to %s with <', newval, name)
-        break
-      elif op == '>' and row[condname] != '' and float(row[condname]) > float(condval):
-        row[name] = newval
-        logging.debug('added %s to %s with >', newval, name)
-        break
-      elif op == '=' and row[condname] == condval:
-        row[name] = newval
-        logging.debug('added %s to %s with =', newval, name)
-        break
-      elif op == '!' and row[condname] != condval:
-        row[name] = newval
-        logging.debug('added %s to %s with !', newval, name)
-        break
-      elif op == '%' and condval in row[condname]:
-        row[name] = newval
-        logging.debug('added %s to %s with %', newval, name)
-        break
-    else:
-      row[name] = value
-      logging.debug('added %s to %s', value, name)
-    out.writerow(row)
+    try:
+      for rule in rules:
+        cond, newval = rule.rsplit(':', maxsplit=1)
+        condname, condval = re.split('[<=>!%]', cond, maxsplit=1)
+        op = cond[len(condname)]
+        if op == '<' and row[condname] != '' and float(row[condname]) < float(condval):
+          row[name] = newval
+          logging.debug('added %s to %s with <', newval, name)
+          break
+        elif op == '>' and row[condname] != '' and float(row[condname]) > float(condval):
+          row[name] = newval
+          logging.debug('added %s to %s with >', newval, name)
+          break
+        elif op == '=' and row[condname] == condval:
+          row[name] = newval
+          logging.debug('added %s to %s with =', newval, name)
+          break
+        elif op == '!' and row[condname] != condval:
+          row[name] = newval
+          logging.debug('added %s to %s with !', newval, name)
+          break
+        elif op == '%' and condval in row[condname]:
+          row[name] = newval
+          logging.debug('added %s to %s with %', newval, name)
+          break
+      else:
+        row[name] = value
+        logging.debug('added %s to %s', value, name)
+      out.writerow(row)
+    except:
+      if not skip_fails:
+        raise
+      else:
+        logging.warning('not writing row %i that failed conversion', idx)
+
     if (idx + 1) % 1000 == 0:
       logging.debug('%i lines processed', idx + 1)
 
@@ -55,6 +62,7 @@ if __name__ == '__main__':
   parser.add_argument('--rule', required=False, nargs='*', default=[], help='rule for value of the form col[<=>%%]val:colval')
   parser.add_argument('--delimiter', required=False, default=',', help='delimiter')
   parser.add_argument('--encoding', default='utf-8', help='file encoding')
+  parser.add_argument('--skip_fails', action='store_true', help='continue without writing rules that fail conversion')
   parser.add_argument('--verbose', action='store_true', help='more logging')
   args = parser.parse_args()
   if args.verbose:
@@ -68,4 +76,4 @@ if __name__ == '__main__':
   else:
     logging.debug('using default encoding')
  
-  main(args.name, args.value, args.delimiter, args.rule)
+  main(args.name, args.value, args.delimiter, args.rule, args.skip_fails)
