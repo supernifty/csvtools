@@ -64,6 +64,7 @@ Generate counts of each value in a specified column (or combination of columns)
 
 ```
 csvhist.py --cols Col1 < test/join1.csv
+csvhist.py --cols 'Sepal Length' --bins 5 --numeric < test/iris.tsv
 ```
 
 ## csvjoin.py
