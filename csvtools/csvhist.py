@@ -46,7 +46,6 @@ def main(ifh, ofh, cols, delimiter, numeric, bins=None):
       out.writerow({'value': k, 'count': binned[k], 'pct': '{:.2f}'.format(100 * binned[k] / total)})
   else:
     for k in sorted(counts):
-      # todo arrange into bins for numeric
       out.writerow({'value': k, 'count': counts[k], 'pct': '{:.2f}'.format(100 * counts[k] / total)})
 
 if __name__ == '__main__':

@@ -46,6 +46,13 @@ Filter rows using rules
 csvfilter.py --filter 'x>0' < test/missing.csv
 ```
 
+## csvfilter_cols.py
+Remove columns not matching a rule
+
+```
+python csvtools/csvfilter_cols.py --min 5 --keep Class < test/iris.ts
+```
+
 ## csvflatten
 Converts a table into two columns by making a "key" which includes each column name
 
