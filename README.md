@@ -31,6 +31,12 @@ Compare two files on a cell level
 ```
 csvtools/csvdiff.py --key Y --f1 test/join1.csv --f2 test/diff.csv
 ```
+## csvdrophead.py
+Drops header lines beginning with '##' 
+
+```
+csvtools/csvdrophead.py < test/1.vcf
+```
 
 ## csvempty.py
 Counts missing data for each column

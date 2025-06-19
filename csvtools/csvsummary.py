@@ -76,12 +76,16 @@ def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, pe
 
       for group in sorted(groups): # each unique group
         if add_count_to_group:
-          row = {'Group': '{} (n={})'.format(group, summary[group][col]['n'])}
+          total = sum([summary[group][col][x] for x in summary[group][col]])
+          #row = {'Group': '{} (n={})'.format(group, summary[group][col]['n'])}
+          row = {'Group': '{} (n={})'.format(group, total)}
         else:
           row = {'Group': group}
         for col in colnames: # each column
           total = sum([summary[group][col][x] for x in summary[group][col]])
           for key in summary[group][col].keys():
+            if key == 'n':
+              continue
             row['{}_{}'.format(col, key)] = '{} ({:.2f}%)'.format(summary[group][col][key], 100 * summary[group][col][key] / total)
         ofh.writerow(row)
       

@@ -1,0 +1,6 @@
+##INFO=<ID=SCI,Number=.,Type=String,Description="Aggregate somatic clinical impact for this single variant; multiple values are separated by a vertical bar">
+##INFO=<ID=SCIINCL,Number=.,Type=String,Description="Somatic clinical impact classification for a haplotype or genotype that includes this variant. Reported as pairs of VariationID:classification; multiple values are separated by a vertical bar">
+##INFO=<ID=SCISCV,Number=.,Type=String,Description="SCV accession numbers for the submissions that contribute to the aggregate somatic clinical impact in ClinVar; multiple values are separated by a vertical bar">
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+1       66926   3385321 AG      A       .       .       ALLELEID=3544463
+1       69134   2205837 A       G       .       .       ALLELEID=2193183
