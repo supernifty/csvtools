@@ -19,12 +19,15 @@ def is_numeric(value, line, colname, complain=True):
 
     return False
 
-def rule_succeeded(out, row, exclude):
+def rule_succeeded(out, row, exclude, out_f):
   logging.debug('entering rule_succeeded with exclude=%s for row=%s', exclude, row)
   if not exclude:
     out.writerow(row)
+  else: # exclude is true
+    if out_f is not None:
+      out_f.writerow(row)
 
-def process(fh, filters, delimiter, any_filter, exclude=False, rows=None):
+def process(fh, filters, delimiter, any_filter, exclude=False, rows=None, write_filtered=None):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
@@ -37,6 +40,12 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None):
     out = csv.DictWriter(sys.stdout, delimiter=delimiter, fieldnames=fh.fieldnames)
     out.writeheader()
     lines = passed = 0
+
+    if write_filtered is not None:
+      out_f = csv.DictWriter(open(write_filtered, 'wt'), delimiter=delimiter, fieldnames=fh.fieldnames)
+      out_f.writeheader()
+    else:
+      out_f = None
 
     eq = collections.defaultdict(set) # equal to rule
     lt = collections.defaultdict(float)
@@ -112,7 +121,7 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None):
             break
 
         if done:
-          rule_succeeded(out, row, exclude)
+          rule_succeeded(out, row, exclude, out_f)
           passed += 1
           continue
 
@@ -128,7 +137,7 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None):
               break
 
           if done:
-            rule_succeeded(out, row, exclude)
+            rule_succeeded(out, row, exclude, out_f)
             passed += 1
             continue
 
@@ -145,7 +154,7 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None):
                 break
 
             if done:
-              rule_succeeded(out, row, exclude)
+              rule_succeeded(out, row, exclude, out_f)
               passed += 1
               continue
 
@@ -162,7 +171,7 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None):
                   break
 
               if done:
-                rule_succeeded(out, row, exclude)
+                rule_succeeded(out, row, exclude, out_f)
                 passed += 1
                 continue
 
@@ -178,7 +187,7 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None):
                     break
 
                 if done:
-                  rule_succeeded(out, row, exclude)
+                  rule_succeeded(out, row, exclude, out_f)
                   passed += 1
                   continue
 
@@ -194,7 +203,7 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None):
                       break
 
                   if done:
-                    rule_succeeded(out, row, exclude)
+                    rule_succeeded(out, row, exclude, out_f)
                     passed += 1
                     continue
    
@@ -210,12 +219,12 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None):
                         break
   
                     if done or ok:
-                      rule_succeeded(out, row, exclude)
+                      rule_succeeded(out, row, exclude, out_f)
                       passed += 1
 
         # it got through all rules and something failed
-        if exclude and not ok:
-          rule_succeeded(out, row, False)
+        if not ok:
+          rule_succeeded(out, row, not exclude, out_f)
 
         if lines % 100000 == 0:
           logging.info('%i lines processed, wrote %i. last row read: %s...', lines, passed, row)
@@ -233,6 +242,7 @@ def main():
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     parser.add_argument('--any', action='store_true', help='allow if any filter is true (default is and)')
     parser.add_argument('--exclude', action='store_true', default=False, help='write rows that fail test')
+    parser.add_argument('--write_filtered', help='write rows that fail test to this file')
     parser.add_argument('--encoding', default='utf-8', help='file encoding')
     parser.add_argument('--verbose', action='store_true', default=False, help='more logging')
     parser.add_argument('--quiet', action='store_true', default=False, help='less logging')
@@ -248,7 +258,7 @@ def main():
       logging.debug('encoding %s applied', args.encoding)
     else:
       logging.debug('using default encoding')
-    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.filters, args.delimiter, args.any, args.exclude, args.rows)
+    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.filters, args.delimiter, args.any, args.exclude, args.rows, args.write_filtered)
 
 if __name__ == '__main__':
     main()
