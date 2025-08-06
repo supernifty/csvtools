@@ -56,7 +56,7 @@ csvfilter.py --filter 'x>0' < test/missing.csv
 Remove columns not matching a rule
 
 ```
-python csvtools/csvfilter_cols.py --min 5 --keep Class < test/iris.ts
+python csvtools/csvfilter_cols.py --min 5 --keep Class < test/iris.tsv
 ```
 
 ## csvflatten
@@ -67,10 +67,10 @@ csvflatten.py --key Key < test/3.csv
 ```
 
 ## csvgroup
-TODO Combine rows by grouping columns following a specified rule
+Combine rows by grouping columns following a specified rule
 
 ```
-csvgroup.py --delimiter '       ' --op Count=max
+csvgroup.py --op state=join pop=sum < test/5.csv
 ```
 ## csvhist.py
 Generate counts of each value in a specified column (or combination of columns)

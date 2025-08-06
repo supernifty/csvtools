@@ -49,6 +49,10 @@ def process(fh, op, delimiter, join_string=' + '):
             if field not in out_rows[key]:
               out_rows[key][field] = 0
             out_rows[key][field] += 1
+          elif ops[field] == 'mean':
+            if field not in out_rows[key]:
+              out_rows[key][field] = (0.0, 0)
+            out_rows[key][field] = (out_rows[key][field][0] + float(row[field]), out_rows[key][field][1] + 1)
           elif ops[field] == 'join':
             if field not in out_rows[key]:
               out_rows[key][field] = row[field]
@@ -77,6 +81,11 @@ def process(fh, op, delimiter, join_string=' + '):
           out_rows[key][field] = row[field]
         
     for key in out_rows:
+      # post processing
+      for field in ops:
+        if ops[field] == 'mean':
+          out_rows[key][field] = out_rows[key][field][0] / out_rows[key][field][1] 
+      # write it
       out.writerow(out_rows[key])
 
     logging.info('done')
