@@ -147,8 +147,16 @@ Adds a total column and updates specified columns to be a proportion of this tot
 ```
 csvnorm.py --cols Shared1 Shared2 Only1 < test/1.csv
 ```
-## csvnormalise
-Normalises each specified column individually as a proportion of the maximum observed value
+
+## csvnormalise_mean
+Normalises each specified column individually to the mean
+
+```
+csvtools/csvnormalise_mean.py --cols Shared1 Shared2 Only1 < test/1.csv
+```
+
+## csvnormalise_range
+Normalises each specified column individually as a proportion of the (maximum-minimum) observed value
 
 ```
 csvtools/csvnormalise.py --cols Shared1 Shared2 Only1 < test/1.csv
