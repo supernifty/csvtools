@@ -16,20 +16,29 @@ def main(delimiter, fh, out, cols, sd):
   reader = csv.DictReader(fh, delimiter=delimiter)
   rows = []
   vals = collections.defaultdict(list)
+  exclude = set()
+  if cols is None:
+    cols = reader.fieldnames
   for idx, r in enumerate(reader): # each row
     rows.append(r)
     for v in cols:
-      vals[v].append(float(r[v]))
+      try:
+        vals[v].append(float(r[v]))
+      except:
+        exclude.add(v)
 
+  logging.info('excluding %s', exclude)
   logging.info('calculating...')
-  means = {k: numpy.mean(vals[k]) for k in vals}
-  sds = {k: numpy.std(vals[k], ddof=1) for k in vals}
+  means = {k: numpy.mean(vals[k]) for k in vals if k not in exclude}
+  sds = {k: numpy.std(vals[k], ddof=1) for k in vals if k not in exclude}
 
   logging.info('writing...')
   writer = csv.DictWriter(out, delimiter=delimiter, fieldnames=reader.fieldnames)
   writer.writeheader()
   for r in rows:
     for v in cols:
+      if v in exclude:
+        continue
       val = float(r[v])
       r[v] = val - means[v]
       if sd:

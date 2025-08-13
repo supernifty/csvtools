@@ -59,6 +59,14 @@ Remove columns not matching a rule
 python csvtools/csvfilter_cols.py --min 5 --keep Class < test/iris.tsv
 ```
 
+## csvfilter_boring.py
+Drop columns containing numeric data with a small range or low mean. Columns containing non-numeric data are always retained.
+
+```
+python csvtools/csvfilter_boring.py --min_range 5 < test/iris.tsv
+```
+
+
 ## csvflatten
 Converts a table into two columns by making a "key" which includes each column name
 
