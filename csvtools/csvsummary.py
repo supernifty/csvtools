@@ -21,6 +21,9 @@ def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, pe
   logging.info('starting...')
 
   reader = csv.DictReader(fh, delimiter=delimiter)
+  if colnames is None:
+    colnames = reader.fieldnames
+
   summary = collections.defaultdict(dict)
   groups = set()
   if categorical:
@@ -210,7 +213,7 @@ def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, pe
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Basic stats of specified columns')
-  parser.add_argument('--cols', '--columns', required=True, nargs='+', help='columns to summarise')
+  parser.add_argument('--cols', '--columns', required=False, nargs='+', help='columns to summarise')
   parser.add_argument('--delimiter', required=False, default=',', help='input files')
   parser.add_argument('--group', required=False, nargs='+', help='column to group on')
   parser.add_argument('--add_count_to_group', action='store_true',  help='format group to include count')
