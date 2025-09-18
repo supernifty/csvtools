@@ -13,6 +13,7 @@ def main(cols, targetname, targetvalue, delimiter):
   fh = csv.DictReader(sys.stdin, delimiter=delimiter)
   if len(cols) == 0:
     newcols = [targetname, targetvalue] # with no cols specified, drop them all
+    cols = fh.fieldnames
   else:
     newcols = [x for x in fh.fieldnames if x not in cols] + [targetname, targetvalue]
   logging.debug(newcols)
