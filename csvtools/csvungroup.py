@@ -11,7 +11,10 @@ import sys
 
 def main(cols, targetname, targetvalue, delimiter):
   fh = csv.DictReader(sys.stdin, delimiter=delimiter)
-  newcols = [x for x in fh.fieldnames if x not in cols] + [targetname, targetvalue]
+  if len(cols) == 0:
+    newcols = [targetname, targetvalue] # with no cols specified, drop them all
+  else:
+    newcols = [x for x in fh.fieldnames if x not in cols] + [targetname, targetvalue]
   logging.debug(newcols)
   out = csv.DictWriter(sys.stdout, delimiter=delimiter, fieldnames=newcols)
   out.writeheader()
