@@ -22,7 +22,8 @@ TODO
 Filter on columns and perform other operations on columns
 
 ```
-csvcols.py --cols greet < test/3.csv
+csvcols.py --cols key < test/3.csv
+csvcols.py --starts_with v < test/3.csv
 ```
 
 ## csvdiff.py

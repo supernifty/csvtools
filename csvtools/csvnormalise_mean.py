@@ -11,7 +11,7 @@ import sys
 
 import numpy
 
-def main(delimiter, fh, out, cols, sd):
+def main(delimiter, fh, out, cols, sd, prefix):
   logging.info('reading...')
   reader = csv.DictReader(fh, delimiter=delimiter)
   rows = []
@@ -19,6 +19,11 @@ def main(delimiter, fh, out, cols, sd):
   exclude = set()
   if cols is None:
     cols = reader.fieldnames
+  else:
+    # all cols should be in reader
+    for c in cols:
+      if c not in reader.fieldnames:
+        logging.warning('column %s not in input', c)
   for idx, r in enumerate(reader): # each row
     rows.append(r)
     for v in cols:
@@ -33,16 +38,29 @@ def main(delimiter, fh, out, cols, sd):
   sds = {k: numpy.std(vals[k], ddof=1) for k in vals if k not in exclude}
 
   logging.info('writing...')
-  writer = csv.DictWriter(out, delimiter=delimiter, fieldnames=reader.fieldnames)
+  if prefix is None:
+    writer = csv.DictWriter(out, delimiter=delimiter, fieldnames=reader.fieldnames)
+  else:
+    writer = csv.DictWriter(out, delimiter=delimiter, fieldnames=reader.fieldnames + ['{}{}'.format(prefix, col) for col in cols])
   writer.writeheader()
   for r in rows:
     for v in cols:
+      if prefix is not None:
+        target = '{}{}'.format(prefix, v)
+      else:
+        target = v
       if v in exclude:
+        if prefix is not None:
+          r[target] = r[v]
         continue
       val = float(r[v])
-      r[v] = val - means[v]
-      if sd:
-        r[v] /= sds[v]
+      if prefix is not None:
+        target = '{}{}'.format(prefix, v)
+      else:
+        target = v
+      r[target] = val - means[v]
+      if sd and sds[v] > 0:
+        r[target] /= sds[v]
     writer.writerow(r)
   logging.info('done...')
     
@@ -54,6 +72,7 @@ if __name__ == '__main__':
   parser.add_argument('--verbose', action='store_true', help='more logging')
   parser.add_argument('--quiet', action='store_true', help='more logging')
   parser.add_argument('--cols', required=False, nargs='+', help='cols to normalise')
+  parser.add_argument('--prefix', required=False, help='create new columns with this prefix')
   args = parser.parse_args()
   if args.verbose:
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
@@ -65,4 +84,4 @@ if __name__ == '__main__':
   if args.encoding and "reconfigure" in dir(sys.stdin):
     sys.stdin.reconfigure(encoding=args.encoding)
 
-  main(args.delimiter, sys.stdin, sys.stdout, args.cols, args.sd)
+  main(args.delimiter, sys.stdin, sys.stdout, args.cols, args.sd, args.prefix)

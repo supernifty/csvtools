@@ -21,7 +21,7 @@ def get_fh(fh):
   except:
     return sys.stdin
 
-def process(fh, cols, exclude, exclude_ends_with, delimiter, unique, rename_in, rename_all, delimiter_out):
+def process(fh, cols, exclude, exclude_ends_with, delimiter, unique, rename_in, rename_all, delimiter_out, starts_with):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
@@ -38,8 +38,10 @@ def process(fh, cols, exclude, exclude_ends_with, delimiter, unique, rename_in, 
         rename[oldname] = newname
 
     if not exclude: # include specified
-      if cols is None:
+      if cols is None and starts_with is None:
         include = fh.fieldnames
+      elif starts_with is not None:
+        include = [c for c in fh.fieldnames if c.startswith(starts_with)]
       else:
         include = cols
       logging.debug('csvcols: new header is %s', cols)
@@ -79,6 +81,7 @@ def main():
     '''
     parser = argparse.ArgumentParser(description='Filter column names')
     parser.add_argument('--cols', required=False, nargs='+', help='columns to include')
+    parser.add_argument('--starts_with', required=False, help='column must start with')
     parser.add_argument('--exclude', action='store_true', help='exclude instead')
     parser.add_argument('--exclude_ends_with', required=False, help='additional exclude rule')
     parser.add_argument('--unique', action='store_true', help='remove duplicate columns')
@@ -100,7 +103,7 @@ def main():
 
     if args.encoding is not None and "reconfigure" in dir(sys.stdin):
       sys.stdin.reconfigure(encoding=args.encoding)
-    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.exclude, args.exclude_ends_with, args.delimiter, args.unique, args.rename, args.rename_all, args.delimiter_out)
+    process(csv.DictReader(sys.stdin, delimiter=args.delimiter), args.cols, args.exclude, args.exclude_ends_with, args.delimiter, args.unique, args.rename, args.rename_all, args.delimiter_out, args.starts_with)
 
 if __name__ == '__main__':
     main()
