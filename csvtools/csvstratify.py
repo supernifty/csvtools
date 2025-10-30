@@ -17,12 +17,15 @@ def main(ifh, ofh, delimiter, col, dest, names, separators, equal_policy):
   odr.writeheader()
   summary = collections.defaultdict(int)
   for r in idr:
-    v = float(r[col])
-    result = names[-1] # if larger than everything
-    for name, sep in zip(names[:-1], separators):
-      if v < sep or equal_policy == 'down' and v <= sep:
-        result = name
-        break
+    try:
+      v = float(r[col])
+      result = names[-1] # if larger than everything
+      for name, sep in zip(names[:-1], separators):
+        if v < sep or equal_policy == 'down' and v <= sep:
+          result = name
+          break
+    except ValueError:
+      result = 'nan'
     r[dest] = result
     summary[result] += 1
     odr.writerow(r)
