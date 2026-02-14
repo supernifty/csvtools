@@ -18,7 +18,7 @@ def is_numeric(value):
   except ValueError:
     return False
 
-def process(ifh, ofh, delimiter, min_range=0.05, min_mean=0.0):
+def process(ifh, ofh, delimiter, min_range=0.05, min_mean=0.0, cols=None):
     '''
         read in csv file, drop any field with range < minrange and mean < minmean
         apply rule to each field (in order)
@@ -32,7 +32,10 @@ def process(ifh, ofh, delimiter, min_range=0.05, min_mean=0.0):
 
     include = set() # indexes of columns to include
     for c in range(len(data[0])):
-      if all([is_numeric(data[i][fh.fieldnames[c]]) for i in range(len(data))]):
+      if cols is not None and c not in cols:
+        logging.debug('keeping unmentioned col %s', c)
+        include.add(c)
+      elif all([is_numeric(data[i][fh.fieldnames[c]]) for i in range(len(data))]):
         coldata = [float(data[i][fh.fieldnames[c]]) for i in range(len(data))]
         minval = min(coldata)
         maxval = max(coldata)
@@ -62,6 +65,7 @@ def main():
     parser = argparse.ArgumentParser(description='Filter rows')
     parser.add_argument('--min_range', default=0.05, type=float, help='min range of column')
     parser.add_argument('--min_mean', default=0.0, type=float, help='min mean of column')
+    parser.add_argument('--cols', required=False, nargs='+', help='only consider these cols')
     parser.add_argument('--delimiter', default=',', help='csv delimiter')
     parser.add_argument('--encoding', default='utf-8', help='file encoding')
     parser.add_argument('--verbose', action='store_true', default=False, help='more logging')
@@ -78,7 +82,7 @@ def main():
       logging.debug('encoding %s applied', args.encoding)
     else:
       logging.debug('using default encoding')
-    process(sys.stdin, sys.stdout, delimiter=args.delimiter, min_range=args.min_range, min_mean=args.min_mean)
+    process(sys.stdin, sys.stdout, delimiter=args.delimiter, min_range=args.min_range, min_mean=args.min_mean, cols=args.cols)
 
 if __name__ == '__main__':
     main()

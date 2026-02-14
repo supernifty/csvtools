@@ -9,7 +9,7 @@ import sys
 def main(ifh, ofh, delimiter, col, filename):
   logging.info('reading %s...', filename)
   f = set()
-  for r in csv.DictReader(open(filename, 'rt'), delimiter='\t'):
+  for r in csv.DictReader(open(filename, 'rt'), delimiter=delimiter):
     f.add(r[col])
   logging.info('%i values', len(f))
 

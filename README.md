@@ -66,7 +66,11 @@ Drop columns containing numeric data with a small range or low mean. Columns con
 ```
 python csvtools/csvfilter_boring.py --min_range 5 < test/iris.tsv
 ```
-
+## csvfilter_file.py
+Filter one file based on another
+```
+python csvtools/csvfilter_file.py --col sample --file test/todo.csv < test/iris.csv
+```
 
 ## csvflatten
 Converts a table into two columns by making a "key" which includes each column name
@@ -216,6 +220,13 @@ writes each row with a provided probability
 
 ```
 csvsubsample.py --probability 0.5 < test/5.csv
+```
+
+## csvshrink
+reduce column values using Dirichlet shrinkage to prior
+
+```
+csvshrink.py --cols S18 --k 4 --n_col S36 < test/pivot.csv
 ```
 
 ## csvsummary

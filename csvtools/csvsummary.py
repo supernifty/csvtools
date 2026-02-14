@@ -89,7 +89,7 @@ def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, pe
           for key in summary[group][col].keys():
             if key == 'n':
               continue
-            row['{}_{}'.format(col, key)] = '{} ({:.2f}%)'.format(summary[group][col][key], 100 * summary[group][col][key] / total)
+            row['{}_{}'.format(col, key)] = '{} ({:.6f}%)'.format(summary[group][col][key], 100 * summary[group][col][key] / total)
         ofh.writerow(row)
       
       if pvalue:
@@ -150,7 +150,7 @@ def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, pe
         row = {'Group': group}
         for col in colnames:
           if summary[group][col]['n'] > 0:
-            row[col] = '{:.3f} ({:.3f})'.format(summary[group][col]['sum'] / summary[group][col]['n'], numpy.std(summary[group][col]['d'], ddof=1))
+            row[col] = '{:.6f} ({:.6f})'.format(summary[group][col]['sum'] / summary[group][col]['n'], numpy.std(summary[group][col]['d'], ddof=1))
           else:
             row[col] = '-'
         ofh.writerow(row)
@@ -205,7 +205,7 @@ def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, pe
             if just_write is None:
               if add_count_to_group:
                 group = '{} (n={})'.format(group, summary[group][col]['n'])
-              out.write('{}\t{}\t{}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}{}\n'.format(group, col, summary[group][col]['n'], summary[group][col]['sum'], summary[group][col]['min'], summary[group][col]['max'], summary[group][col]['mean'], summary[group][col]['sd'], summary[group][col]['median'], ''.join(['\t{:.3f}'.format(x) for x in percentile_results])))
+              out.write('{}\t{}\t{}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}{}\n'.format(group, col, summary[group][col]['n'], summary[group][col]['sum'], summary[group][col]['min'], summary[group][col]['max'], summary[group][col]['mean'], summary[group][col]['sd'], summary[group][col]['median'], ''.join(['\t{:.6f}'.format(x) for x in percentile_results])))
             else:
               out.write('{}\n'.format(summary[group][col][just_write]))
           else:

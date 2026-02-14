@@ -52,7 +52,10 @@ def process(fh, op, delimiter, join_string=' + '):
           elif ops[field] == 'mean':
             if field not in out_rows[key]:
               out_rows[key][field] = (0.0, 0)
-            out_rows[key][field] = (out_rows[key][field][0] + float(row[field]), out_rows[key][field][1] + 1)
+            try:
+              out_rows[key][field] = (out_rows[key][field][0] + float(row[field]), out_rows[key][field][1] + 1) # tracking sum, count
+            except:
+              logging.warning('field %s not numeric: %s', field, row[field])
           elif ops[field] == 'join':
             if field not in out_rows[key]:
               out_rows[key][field] = row[field]
@@ -84,7 +87,10 @@ def process(fh, op, delimiter, join_string=' + '):
       # post processing
       for field in ops:
         if ops[field] == 'mean':
-          out_rows[key][field] = out_rows[key][field][0] / out_rows[key][field][1] 
+          if out_rows[key][field][1] > 0:
+            out_rows[key][field] = out_rows[key][field][0] / out_rows[key][field][1] 
+          else:
+            out_rows[key][field] = 'n/a'
       # write it
       out.writerow(out_rows[key])
 
