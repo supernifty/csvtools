@@ -222,7 +222,7 @@ writes each row with a provided probability
 csvsubsample.py --probability 0.5 < test/5.csv
 ```
 
-## csvshrink
+## [csvshrink](csvtools/csvshrink.py)
 reduce column values using Dirichlet shrinkage to prior
 
 ```
