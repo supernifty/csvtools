@@ -20,7 +20,7 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match
         read in csv file, look at the header of each
         apply rule to each field (in order)
     '''
-    global KEY_MATCH_UP_TO_TOKEN
+    #global KEY_MATCH_UP_TO_TOKEN
 
     logging.info('reading %i files...', len(fhs))
     headers_map = []
