@@ -1,2 +1,3 @@
 build/
 csvtools.egg-info/
+.aider*
