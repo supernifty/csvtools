@@ -1,12 +1,6 @@
 import io
 import sys
 import textwrap
-import pathlib
-
-# Ensure the project root directory is on sys.path so that
-# `import csvtools` succeeds even when the package is not
-# installed into the current environment.
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 import csvtools.add_count as add_count
 
