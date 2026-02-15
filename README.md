@@ -1,3 +1,5 @@
+[![Build](https://github.com/supernifty/csvtools/actions/workflows/python-package.yml/badge.svg)](https://github.com/supernifty/csvtools/actions/workflows/python-package.yml)
+
 # csvtools
 Tools to manipulate CSV files
 
