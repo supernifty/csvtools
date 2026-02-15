@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''
-  split into multiple files on column
+  Split a CSV file horizontally into multiple files based on a fixed number of data lines per file.
+  The header is preserved in each output file.
 '''
 
 import argparse

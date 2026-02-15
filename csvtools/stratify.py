@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''
-  stratify based on continuous
+  Convert a continuous variable into a stratified categorical variable.
+  Reads a CSV from stdin, bins the specified column using provided thresholds and category names, and outputs the result with a new column.
 '''
 
 import argparse

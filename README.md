@@ -16,7 +16,8 @@ Add a new column with a value determined by using rules based on other columns
 csvadd.py --name greet --value no --rule key=hello:yes < test/3.csv
 ```
 ## [csvcalc.py](csvtools/csvcalc.py)
-TODO
+Calculate a new column based on mapping existing column values.
+Reads a CSV from stdin and uses provided source and destination value lists to append a new computed column.
 
 ## [csvcols.py](csvtools/csvcols.py)
 Filter on columns and perform other operations on columns
@@ -203,7 +204,7 @@ csvsplit.py --col key --target out.value.csv < test/3.csv # generates out.hello.
 ``` 
 
 ## [csvsplit_horizontal.py](csvtools/csvsplit_horizontal.py)
-split into multiple files based on line number - similar to split command but keeps the header
+Split a CSV file horizontally into multiple files, each with a fixed number of data lines, while preserving the header.
 
 ```
 csvsplit_horizontal.py --lines 2 --target out.value.csv < test/3.csv # generates out.0.csv out.1.csv

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''
-  add a column calculated from existing column
+  Calculate a new column based on mapping existing column values.
+  This tool reads a CSV from stdin, uses provided source and destination value lists, and appends a new column with the computed result.
 '''
 
 import argparse

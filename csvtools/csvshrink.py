@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''
-  normalise columns by mean
+  Reduce column values using a shrinkage approach.
+  Combines observed values with a uniform prior using a Dirichlet shrinkage method.
 '''
 
 import argparse

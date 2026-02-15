@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-  apply operation to columns to generate a new column
+  Group rows based on non-operated columns and aggregate specified columns using operations such as sum, count, join, min, max, or mean.
 '''
 
 import argparse

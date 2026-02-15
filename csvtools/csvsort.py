@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''
-  filter on column names
+  Sort CSV rows based on the specified column(s).
+  Supports numeric sorting, lexicographic ordering, and custom order lists.
 '''
 
 import argparse

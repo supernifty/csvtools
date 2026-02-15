@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''
-  what proportion of each column are populated?
+  Normalize specified columns in each row as a proportion of the row total.
+  Appends a new column 'total' representing the sum of the specified columns.
 '''
 
 import argparse

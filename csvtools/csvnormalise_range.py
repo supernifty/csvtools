@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''
-  what proportion of each column are populated?
+  Normalize specified columns by scaling each value by the column maximum (or a given threshold).
+  Each value is replaced by (value / max) so that values lie between 0 and 1.
 '''
 
 import argparse

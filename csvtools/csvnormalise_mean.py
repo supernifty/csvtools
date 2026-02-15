@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''
-  normalise columns by mean
+  Mean-center and optionally standardize specified columns.
+  Subtracts the column mean from each value and divides by the standard deviation if requested.
 '''
 
 import argparse
