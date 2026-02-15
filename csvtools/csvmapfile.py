@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 '''
-  map values in fields to new values
-  python csvmapfile.py --mapfile fn --source_col --map_col_from --map_col_to < old.csv > new.csv
+  Map values in a specified column using a provided mapping file.
+  The mapping file should contain columns indicating the source and target values; the tool applies the mapping to each row read from stdin.
 '''
 
 import argparse

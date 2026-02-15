@@ -113,14 +113,16 @@ python csvmap.py --map colname,oldvalue,newvalue [colname,oldvalue,newvalue...] 
 ```
 
 ## [csvmapfile](csvtools/csvmapfile.py)
-Update values of a specified column (source_col) using mappings from another file
+Map values in a specified column using a mapping file.
+The tool reads the mapping and applies it to update or append the target column.
 
 ```
 python csvmapfile.py --mapfile fn --source_col --map_col_from --map_col_to < old.csv > new.csv
 ```
 
 ## [csvmatrix](csvtools/csvmatrix.py)
-Converts values into columns: convert columns x y z to x [values of y] - and each new column of y contains the value of z
+Convert CSV data by pivoting values in a specified column into new columns.
+Each unique value becomes a new column, with corresponding data populated from the input.
 
 ```
 csvmatrix.py --x  key --y v1 --z v2 < test/3.csv
@@ -184,7 +186,8 @@ csvop.py --op sum --cols Shared1 Shared2 --dests Total < test/1.csv
 ```
 
 ## [csvpivot](csvtools/csvpivot.py)
-The values of a column become the column names, and the values of each row are then the values of those columns.
+Pivot CSV data based on a specified column.
+Transforms the input so that values in the pivot column become new headers.
 
 ```
 csvpivot.py --pivot key2 < test/4.csv
@@ -252,7 +255,7 @@ csvunique.py --cols key < test/3.csv
 ```
 
 ## [csvunique_simple](csvtools/csvunique_simple.py)
-filter out duplicate rows considering all columns
+Filter out duplicate rows, considering all columns, preserving only the first occurrence.
 
 ```
 csvunique_simple.py < test/3.csv

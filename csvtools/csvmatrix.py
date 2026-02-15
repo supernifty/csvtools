@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''
-  convert values into columns
+  Convert CSV data by pivoting values in a specified column into new columns.
+  For each unique value of the chosen column, a new column is created and populated with corresponding data.
 '''
 
 import argparse

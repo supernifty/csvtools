@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''
-  pivot around a column
+  Pivot CSV data based on a specified column.
+  The values in the pivot column become new column headers, while the remaining data is reorganized accordingly.
 '''
 
 import argparse

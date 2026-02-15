@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''
-  show uniques as they appear
+  Filter out duplicate rows considering all columns.
+  Reads a CSV from stdin and writes only the first occurrence of each row, preserving the original order.
 '''
 
 import argparse
