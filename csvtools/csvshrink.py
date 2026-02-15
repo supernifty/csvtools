@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 '''
-  Reduce column values using a shrinkage approach.
-  Combines observed values with a uniform prior using a Dirichlet shrinkage method.
+  Reduce column values using Dirichlet shrinkage: combines observed values with a uniform prior using a shrinkage parameter.
 '''
 
 import argparse

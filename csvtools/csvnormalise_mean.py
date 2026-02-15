@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 '''
-  Mean-center and optionally standardize specified columns.
-  Subtracts the column mean from each value and divides by the standard deviation if requested.
+  Mean-center and optionally standardize each specified column by subtracting the mean and dividing by the standard deviation.
 '''
 
 import argparse

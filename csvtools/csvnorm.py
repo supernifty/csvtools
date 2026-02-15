@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 '''
   Normalize specified columns in each row as a proportion of the row total.
-  Appends a new column 'total' representing the sum of the specified columns.
+  Adds a 'total' column representing the original row sum.
 '''
 
 import argparse
