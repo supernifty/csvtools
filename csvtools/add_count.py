@@ -10,7 +10,7 @@ import logging
 import re
 import sys
 
-def main(dest, cols, delimiter, as_map, cols_as_keys):
+def main(dest, cols, delimiter, as_map, cols_as_keys=False):
   fh = csv.DictReader(sys.stdin, delimiter=delimiter)
   if as_map is None:
     out = csv.DictWriter(sys.stdout, delimiter=delimiter, fieldnames=fh.fieldnames + [dest])
