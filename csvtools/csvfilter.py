@@ -54,6 +54,7 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None, write_
     contains = collections.defaultdict(set)
     not_contains = collections.defaultdict(set)
     starts = collections.defaultdict(set)
+    other_column = collections.defaultdict(set)
     for rule in filters:
       if '=' in rule:
         colname, value = rule.split('=', maxsplit=1)
@@ -82,6 +83,9 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None, write_
           gt[colname] = float(value)
         except ValueError:
           gt[colname] = value # now it's another column name
+      elif ':' in rule:
+        colname, value = rule.split(':', maxsplit=1)
+        other_column[colname] = value # e.g. p1:p2
 
     logging.info('affected columns: %s %s %s %s %s %s', ' '.join(eq.keys()), ' '.join(lt.keys()), ' '.join(gt.keys()), ' '.join(ne.keys()), ' '.join(contains.keys()), ' '.join(starts.keys()))
     
@@ -218,9 +222,30 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None, write_
                         done = True
                         break
   
-                    if done or ok:
+                    if done:
                       rule_succeeded(out, row, exclude, out_f)
                       passed += 1
+                      continue
+
+                    if any_filter or ok:
+                      for rule in other_column: # each column name included as an oc rule
+                        #logging.info('testing %s against %s', row[other_column[rule]], row[rule])
+                        if row[other_column[rule]] != row[rule]: # doesn't match =
+                          ok = False
+                          skipped[rule] += 1
+                          if not any_filter:
+                            break
+                        elif any_filter:
+                          done = True
+                          break
+    
+                      if done or ok:
+                        rule_succeeded(out, row, exclude, out_f)
+                        passed += 1
+
+        # it got through all rules and something failed
+        if not ok:
+          rule_succeeded(out, row, not exclude, out_f)
 
         # it got through all rules and something failed
         if not ok:
