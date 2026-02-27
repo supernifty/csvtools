@@ -52,12 +52,12 @@ def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, pe
       fieldnames = []
       colkeys = collections.defaultdict(set)
       for group in sorted(groups): # each unique group
-        for col in colnames: 
+        for col in colnames:
           for key in summary[group][col].keys():
             colkeys[col].add(key)
             if '{}_{}'.format(col, key) not in fieldnames:
               fieldnames.append('{}_{}'.format(col, key))
-      ofh = csv.DictWriter(out, delimiter=delimiter, fieldnames=['Group'] + sorted(fieldnames))
+      ofh = csv.DictWriter(out, delimiter=delimiter, fieldnames=['Group', 'n'] + sorted(fieldnames))
       ofh.writeheader()
 
       pvalues = {}
@@ -78,12 +78,13 @@ def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, pe
           logging.debug('pvalue for %s is %f from observed %s expected %s dof %i ddof %i', col, pvalues[col], observed, expected, dof, ddof)
 
       for group in sorted(groups): # each unique group
+        total = sum([summary[group][col][x] for x in summary[group][col]])
         if add_count_to_group:
-          total = sum([summary[group][col][x] for x in summary[group][col]])
           #row = {'Group': '{} (n={})'.format(group, summary[group][col]['n'])}
           row = {'Group': '{} (n={})'.format(group, total)}
         else:
           row = {'Group': group}
+        row['n'] = total
         for col in colnames: # each column
           total = sum([summary[group][col][x] for x in summary[group][col]])
           for key in summary[group][col].keys():
@@ -144,15 +145,17 @@ def main(colnames, delimiter, categorical, fh, out, groupcols, population_sd, pe
       # group col1_val1 col1_val2...
       # x %...
       # builld list of colnames
-      ofh = csv.DictWriter(out, delimiter=delimiter, fieldnames=['Group'] + sorted(colnames))
+      ofh = csv.DictWriter(out, delimiter=delimiter, fieldnames=['Group', 'n'] + sorted(colnames))
       ofh.writeheader()
       for group in groups:
         row = {'Group': group}
         for col in colnames:
           if summary[group][col]['n'] > 0:
+            row['n'] = summary[group][col]['n']
             row[col] = '{:.6f} ({:.6f})'.format(summary[group][col]['sum'] / summary[group][col]['n'], numpy.std(summary[group][col]['d'], ddof=1))
           else:
             row[col] = '-'
+            row['n'] = 0
         ofh.writerow(row)
 
       if pvalue:
