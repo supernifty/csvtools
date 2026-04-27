@@ -243,13 +243,8 @@ def process(fh, filters, delimiter, any_filter, exclude=False, rows=None, write_
                         rule_succeeded(out, row, exclude, out_f)
                         passed += 1
 
-        # it got through all rules and something failed
         if not ok:
-          rule_succeeded(out, row, not exclude, out_f)
-
-        # it got through all rules and something failed
-        if not ok:
-          rule_succeeded(out, row, not exclude, out_f)
+            rule_succeeded(out, row, not exclude, out_f)
 
         if lines % 100000 == 0:
           logging.info('%i lines processed, wrote %i. last row read: %s...', lines, passed, row)
