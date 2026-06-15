@@ -107,6 +107,12 @@ python csvjoin.py --keys col1 col2 --files file1 file2.csv > file3.csv
 csvtools/csvjoin.py --keys key key2 --files test/3.csv test/4.csv
 ```
 
+Prefix output column names for each input file to avoid collisions:
+
+```
+csvtools/csvjoin.py --keys key key2 --files test/3.csv test/4.csv --prefixes left_ right_
+```
+
 ## [csvmap](csvtools/csvmap.py)
 Update values of specified columns.
 
@@ -274,4 +280,3 @@ Write rows in order specified on command line - note that this doesn't treat the
 
 ```
 reorder.py 0 3 2 1 < test/3.csv
-

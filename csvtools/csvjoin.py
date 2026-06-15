@@ -15,7 +15,10 @@ import sys
 
 KEY_MATCH_UP_TO_TOKEN='|'
 
-def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match_up_to, key_match_noregex, filenames):
+def process(
+    fhs, keys, delimiter, inner, key_length, horizontal, left,
+    key_match_up_to, key_match_noregex, filenames, prefixes=None,
+):
     '''
         read in csv file, look at the header of each
         apply rule to each field (in order)
@@ -30,17 +33,23 @@ def process(fhs, keys, delimiter, inner, key_length, horizontal, left, key_match
     while len(keys) < len(fhs):
       keys.append(keys[-1])
 
+    if prefixes is None:
+      prefixes = []
+    while len(prefixes) < len(fhs):
+      prefixes.append('')
+
     for file_num, (key, fh) in enumerate(zip(keys, fhs)):
       logging.debug('reading header of file %i with key %s...', file_num, key)
       header = next(fh)
       logging.debug('reading header of file %i: %s', file_num, header)
+      prefixed_header = [prefixes[file_num] + h for h in header]
       if not horizontal or file_num == 0:
-        out_headers = out_headers + header 
+        out_headers = out_headers + prefixed_header
       else:
-        out_headers = out_headers + [h for h in header if h not in out_headers] # don't include identical keys
+        out_headers = out_headers + [h for h in prefixed_header if h not in out_headers] # don't include identical keys
       colmap = {name: pos for pos, name in enumerate(header)}
       headers_map.append(colmap)
-      headers.append(header)
+      headers.append(prefixed_header)
       for keyname in key.split(','):
         if keyname not in colmap:
           logging.warn('key %s not found in file %i: %s', keyname, file_num, filenames[file_num])
@@ -153,6 +162,12 @@ def main():
     parser.add_argument('--key_match_up_to', nargs='+', required=False, help='match up to string')
     parser.add_argument('--key_match_noregex', action='store_true', help='do not use regex for keymatch')
     parser.add_argument('--files', nargs='+', help='input files')
+    parser.add_argument(
+      '--prefixes',
+      nargs='+',
+      required=False,
+      help='prefixes to add to output column names for each input file',
+    )
     parser.add_argument('--delimiter', required=False, default=',', help='input files')
     parser.add_argument('--encoding', default='utf-8', help='file encoding')
     parser.add_argument('--verbose', action='store_true', help='more logging')
@@ -165,7 +180,19 @@ def main():
     else:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
-    process([csv.reader(open(fn, 'r', encoding=args.encoding), delimiter=args.delimiter) for fn in args.files], args.keys, args.delimiter, args.inner, args.key_length, args.horizontal, args.left, args.key_match_up_to, args.key_match_noregex, args.files)
+    process(
+      [csv.reader(open(fn, 'r', encoding=args.encoding), delimiter=args.delimiter) for fn in args.files],
+      args.keys,
+      args.delimiter,
+      args.inner,
+      args.key_length,
+      args.horizontal,
+      args.left,
+      args.key_match_up_to,
+      args.key_match_noregex,
+      args.files,
+      args.prefixes,
+    )
 
 if __name__ == '__main__':
     main()
